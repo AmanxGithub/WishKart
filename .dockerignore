@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+.vscode
+*.swp
+*.swo
+
+# Build artifacts
+target/
+build/
+*.jar
+!target/*.jar
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.docker/
+
+# Documentation
+*.md
+docs/
+
+# Tests
+src/test/
+
+# Node modules (if any frontend)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp

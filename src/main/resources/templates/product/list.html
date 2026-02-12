@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Products')}"></head>
+<body>
+<nav th:replace="~{fragments/header :: navbar}"></nav>
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+            <li class="breadcrumb-item active" th:if="${selectedCategory == null}">Products</li>
+            <li class="breadcrumb-item" th:if="${selectedCategory != null}"><a th:href="@{/products}">Products</a></li>
+            <li class="breadcrumb-item active" th:if="${selectedCategory != null}" th:text="${selectedCategory.name}">Category</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Categories</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/products}" 
+                       class="list-group-item list-group-item-action"
+                       th:classappend="${selectedCategory == null} ? ' active' : ''">
+                        All Products
+                    </a>
+                    <a th:each="category : ${categories}"
+                       th:href="@{/categories/{slug}(slug=${category.slug})}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                       th:classappend="${selectedCategory != null && selectedCategory.id == category.id} ? ' active' : ''">
+                        <span th:text="${category.name}">Category</span>
+                        <span class="badge bg-secondary rounded-pill" th:text="${category.productCount}">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Price Filter -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-currency-rupee me-2"></i>Price Range</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/products}" method="get">
+                        <input type="hidden" name="category" th:value="${selectedCategory?.id}">
+                        <div class="mb-3">
+                            <label class="form-label">Min Price</label>
+                            <input type="number" name="minPrice" class="form-control" placeholder="₹0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Price</label>
+                            <input type="number" name="maxPrice" class="form-control" placeholder="₹50,000">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-md-9">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 th:if="${searchQuery != null}" th:text="'Search results for: ' + ${searchQuery}">Products</h4>
+                    <h4 th:if="${selectedCategory != null}" th:text="${selectedCategory.name}">Category</h4>
+                    <h4 th:if="${searchQuery == null && selectedCategory == null}">All Products</h4>
+                    <p class="text-muted mb-0" th:text="${totalItems} + ' products found'">100 products found</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <label class="me-2">Sort by:</label>
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="sortProducts(this.value)">
+                        <option value="newest">Newest</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="name">Name</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="row g-4" th:if="${!products.empty}">
+                <div class="col-6 col-lg-4" th:each="product : ${products}">
+                    <div class="card h-100 product-card">
+                        <div class="position-relative">
+                            <a th:href="@{/products/{slug}(slug=${product.slug})}">
+                                <img th:src="${product.primaryImage}" class="card-img-top" 
+                                     th:alt="${product.name}" style="height: 200px; object-fit: cover;">
+                            </a>
+                            <span th:if="${product.compareAtPrice != null}" 
+                                  class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                <span th:text="${product.discountPercentage}"></span>% OFF
+                            </span>
+                            <span th:if="${!product.inStock}" 
+                                  class="badge bg-secondary position-absolute top-0 start-0 m-2">
+                                Out of Stock
+                            </span>
+                            <span th:if="${product.lowStock && product.inStock}" 
+                                  class="badge bg-warning position-absolute top-0 start-0 m-2">
+                                Low Stock
+                            </span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <p class="text-muted small mb-1" th:text="${product.categoryName}">Category</p>
+                            <h6 class="card-title flex-grow-1">
+                                <a th:href="@{/products/{slug}(slug=${product.slug})}" 
+                                   class="text-decoration-none text-dark" th:text="${product.name}">
+                                    Product Name
+                                </a>
+                            </h6>
+                            <p class="card-text small text-muted" 
+                               th:text="${#strings.abbreviate(product.shortDescription, 60)}">
+                                Short description here...
+                            </p>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="text-warning small">
+                                    <i class="bi" th:each="i : ${#numbers.sequence(1, 5)}"
+                                       th:classappend="${i <= product.averageRating} ? 'bi-star-fill' : 'bi-star'"></i>
+                                </div>
+                                <small class="text-muted ms-1" th:text="'(' + ${product.reviewCount} + ')'"></small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <div>
+                                    <span class="fw-bold text-primary" th:text="'₹' + ${#numbers.formatInteger(product.price, 0, 'COMMA')}">₹9,999</span>
+                                    <small th:if="${product.compareAtPrice != null}"
+                                           class="text-muted text-decoration-line-through ms-1"
+                                           th:text="'₹' + ${#numbers.formatInteger(product.compareAtPrice, 0, 'COMMA')}">₹12,999</small>
+                                </div>
+                                <button class="btn btn-sm btn-primary add-to-cart-btn"
+                                        th:data-product-id="${product.id}"
+                                        th:disabled="${!product.inStock}">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Products -->
+            <div class="text-center py-5" th:if="${products.empty}">
+                <i class="bi bi-search fs-1 text-muted"></i>
+                <h4 class="mt-3">No products found</h4>
+                <p class="text-muted">Try adjusting your search or filter to find what you're looking for.</p>
+                <a th:href="@{/products}" class="btn btn-primary">View All Products</a>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled' : ''">
+                        <a class="page-link" th:href="@{/products(page=${currentPage - 1}, q=${searchQuery}, category=${selectedCategory?.id})}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${currentPage == i} ? ' active' : ''">
+                        <a class="page-link" th:href="@{/products(page=${i}, q=${searchQuery}, category=${selectedCategory?.id})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled' : ''">
+                        <a class="page-link" th:href="@{/products(page=${currentPage + 1}, q=${searchQuery}, category=${selectedCategory?.id})}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+</body>
+</html>

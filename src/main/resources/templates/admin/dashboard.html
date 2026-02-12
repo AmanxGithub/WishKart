@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Admin Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/header :: navbar}"></nav>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Admin Panel</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#dashboard" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="bi bi-graph-up me-2"></i>Dashboard
+                    </a>
+                    <a href="#products" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-box me-2"></i>Products
+                    </a>
+                    <a href="#orders" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-receipt me-2"></i>Orders
+                    </a>
+                    <a href="#users" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-people me-2"></i>Users
+                    </a>
+                    <a href="#categories" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-tags me-2"></i>Categories
+                    </a>
+                    <a href="#inventory" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-box-seam me-2"></i>Inventory
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="tab-content">
+                <!-- Dashboard Tab -->
+                <div class="tab-pane fade show active" id="dashboard">
+                    <h4 class="mb-4">Dashboard Overview</h4>
+
+                    <div id="statsLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <div id="statsContent" class="d-none">
+                        <!-- Stats Cards -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 opacity-75">Total Revenue</h6>
+                                                <h3 class="card-title mb-0" id="totalRevenue">₹0</h3>
+                                            </div>
+                                            <i class="bi bi-currency-rupee fs-1 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 opacity-75">Total Orders</h6>
+                                                <h3 class="card-title mb-0" id="totalOrders">0</h3>
+                                            </div>
+                                            <i class="bi bi-receipt fs-1 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 opacity-75">Total Products</h6>
+                                                <h3 class="card-title mb-0" id="totalProducts">0</h3>
+                                            </div>
+                                            <i class="bi bi-box fs-1 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 opacity-75">Total Customers</h6>
+                                                <h3 class="card-title mb-0" id="totalCustomers">0</h3>
+                                            </div>
+                                            <i class="bi bi-people fs-1 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Stats -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="text-muted">Pending Orders</h6>
+                                        <h4 id="pendingOrders">0</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="text-muted">Low Stock Products</h6>
+                                        <h4 class="text-warning" id="lowStockProducts">0</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="text-muted">Today's Revenue</h6>
+                                        <h4 class="text-success" id="todayRevenue">₹0</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Tab -->
+                <div class="tab-pane fade" id="products">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Products Management</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal">
+                            <i class="bi bi-plus me-1"></i>Add Product
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="productsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Image</th>
+                                            <th>Name</th>
+                                            <th>SKU</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div class="tab-pane fade" id="orders">
+                    <h4 class="mb-4">Orders Management</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="ordersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Customer</th>
+                                            <th>Items</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ordersTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div class="tab-pane fade" id="users">
+                    <h4 class="mb-4">Users Management</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="usersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Tab -->
+                <div class="tab-pane fade" id="categories">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Categories Management</h4>
+                        <button class="btn btn-primary" onclick="showCategoryModal()">
+                            <i class="bi bi-plus me-1"></i>Add Category
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body" id="categoriesList"></div>
+                    </div>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div class="tab-pane fade" id="inventory">
+                    <h4 class="mb-4">Inventory Alerts</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning">
+                                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Low Stock</h5>
+                                </div>
+                                <div class="card-body" id="lowStockList"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Out of Stock</h5>
+                                </div>
+                                <div class="card-body" id="outOfStockList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardStats();
+
+        // Load data when tabs are shown
+        document.querySelectorAll('[data-bs-toggle="list"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const target = e.target.getAttribute('href');
+                if (target === '#products') loadProducts();
+                else if (target === '#orders') loadOrders();
+                else if (target === '#users') loadUsers();
+                else if (target === '#categories') loadCategories();
+                else if (target === '#inventory') loadInventory();
+            });
+        });
+    });
+
+    // Format INR currency
+    function formatINR(amount) {
+        return '₹' + new Intl.NumberFormat('en-IN').format(Math.round(amount || 0));
+    }
+
+    async function loadDashboardStats() {
+        try {
+            const response = await fetchWithAuth('/api/admin/dashboard');
+            const data = await response.json();
+
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('totalRevenue').textContent = formatINR(stats.totalRevenue);
+                document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
+                document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
+                document.getElementById('totalCustomers').textContent = stats.totalCustomers || 0;
+                document.getElementById('pendingOrders').textContent = stats.pendingOrders || 0;
+                document.getElementById('lowStockProducts').textContent = stats.lowStockProducts || 0;
+                document.getElementById('todayRevenue').textContent = formatINR(stats.revenueToday);
+
+                document.getElementById('statsLoading').classList.add('d-none');
+                document.getElementById('statsContent').classList.remove('d-none');
+            }
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        }
+    }
+
+    async function loadProducts() {
+        try {
+            const response = await fetchWithAuth('/api/admin/products');
+            const data = await response.json();
+
+            if (data.success) {
+                const tbody = document.getElementById('productsTableBody');
+                tbody.innerHTML = data.data.content.map(p => `
+                    <tr>
+                        <td><img src="${p.primaryImage || 'https://via.placeholder.com/50x50?text=No+Image'}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
+                        <td>${p.name}</td>
+                        <td>${p.sku}</td>
+                        <td>${formatINR(p.price)}</td>
+                        <td><span class="badge ${p.stockQuantity <= 10 ? 'bg-warning' : 'bg-success'}">${p.stockQuantity}</span></td>
+                        <td><span class="badge ${p.active ? 'bg-success' : 'bg-secondary'}">${p.active ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editProduct(${p.id})"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Failed to load products:', error);
+        }
+    }
+
+    async function loadOrders() {
+        try {
+            const response = await fetchWithAuth('/api/admin/orders');
+            const data = await response.json();
+
+            if (data.success) {
+                const tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = data.data.content.map(o => `
+                    <tr>
+                        <td><strong>${o.orderNumber}</strong></td>
+                        <td>${o.userName || 'N/A'}<br><small class="text-muted">${o.userEmail || ''}</small></td>
+                        <td>${o.totalItemCount || 0} items</td>
+                        <td>${formatINR(o.totalAmount)}</td>
+                        <td><span class="badge bg-${getStatusColor(o.status)}">${o.status}</span></td>
+                        <td>${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${o.id})"><i class="bi bi-eye"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Failed to load orders:', error);
+        }
+    }
+
+    async function loadUsers() {
+        try {
+            const response = await fetchWithAuth('/api/admin/users');
+            const data = await response.json();
+
+            if (data.success) {
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = data.data.content.map(u => `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td>${u.firstName} ${u.lastName}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge ${u.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}">${u.role}</span></td>
+                        <td><span class="badge ${u.enabled ? 'bg-success' : 'bg-secondary'}">${u.enabled ? 'Active' : 'Disabled'}</span></td>
+                        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning" onclick="toggleUserStatus(${u.id})">
+                                <i class="bi bi-toggle-on"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Failed to load users:', error);
+        }
+    }
+
+    async function loadInventory() {
+        try {
+            const [lowStock, outOfStock] = await Promise.all([
+                fetchWithAuth('/api/admin/products/low-stock').then(r => r.json()),
+                fetchWithAuth('/api/admin/products/out-of-stock').then(r => r.json())
+            ]);
+
+            document.getElementById('lowStockList').innerHTML = lowStock.data.length ?
+                lowStock.data.map(p => `<div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>${p.name}</span>
+                    <span class="badge bg-warning">${p.stockQuantity} left</span>
+                </div>`).join('') : '<p class="text-muted">No low stock items</p>';
+
+            document.getElementById('outOfStockList').innerHTML = outOfStock.data.length ?
+                outOfStock.data.map(p => `<div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>${p.name}</span>
+                    <button class="btn btn-sm btn-primary" onclick="restockProduct(${p.id})">Restock</button>
+                </div>`).join('') : '<p class="text-muted">No out of stock items</p>';
+        } catch (error) {
+            console.error('Failed to load inventory:', error);
+        }
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'PENDING': 'warning',
+            'CONFIRMED': 'info',
+            'PROCESSING': 'primary',
+            'SHIPPED': 'info',
+            'DELIVERED': 'success',
+            'CANCELLED': 'danger',
+            'REFUNDED': 'secondary'
+        };
+        return colors[status] || 'secondary';
+    }
+</script>
+</body>
+</html>

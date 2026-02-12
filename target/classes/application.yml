@@ -1,0 +1,137 @@
+spring:
+  application:
+    name: WishKart
+
+  # Database Configuration (file-based H2 for persistence)
+  datasource:
+    url: jdbc:h2:file:./data/wishkartdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 Console (for development)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # Mail Configuration (for order confirmations)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:WishKartSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLong2024}
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds
+
+# Stripe Configuration
+stripe:
+  api-key: ${STRIPE_API_KEY:sk_test_placeholder}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+  currency: usd
+
+# Application Configuration
+wishkart:
+  admin:
+    default-email: admin@wishkart.com
+    default-password: ${ADMIN_PASSWORD:Admin@123}
+  upload:
+    path: ./uploads
+    max-file-size: 5MB
+  pagination:
+    default-page-size: 12
+  inventory:
+    low-stock-threshold: 10
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.wishkart: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:wishkart}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+
+  h2:
+    console:
+      enabled: false
+
+  thymeleaf:
+    cache: true
+
+logging:
+  level:
+    root: WARN
+    com.wishkart: INFO

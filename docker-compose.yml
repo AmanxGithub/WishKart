@@ -1,0 +1,162 @@
+# WishKart E-Commerce Platform - Docker Compose
+# Run: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: wishkart-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wishkart
+      POSTGRES_USER: wishkart
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-wishkart_secret_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wishkart -d wishkart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wishkart-network
+
+  # ============================================
+  # Redis Cache (Optional - for sessions/caching)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: wishkart-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secret_password}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wishkart-network
+
+  # ============================================
+  # WishKart Application
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wishkart-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: prod
+      
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: wishkart
+      DB_USERNAME: wishkart
+      DB_PASSWORD: ${DB_PASSWORD:-wishkart_secret_password}
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-WishKartProductionSecretKeyMustBeAtLeast256BitsLongForSecurity2024}
+      
+      # Stripe Configuration
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+      
+      # Admin Configuration
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123!Prod}
+      
+      # Redis Configuration
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secret_password}
+      
+      # Email Configuration (optional)
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    networks:
+      - wishkart-network
+
+  # ============================================
+  # Nginx Reverse Proxy (Optional)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: wishkart-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+    networks:
+      - wishkart-network
+    profiles:
+      - production
+
+  # ============================================
+  # Adminer - Database Management UI (Dev only)
+  # ============================================
+  adminer:
+    image: adminer:latest
+    container_name: wishkart-adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "9090:8080"
+    networks:
+      - wishkart-network
+    profiles:
+      - dev
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  wishkart-network:
+    driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+  app_logs:
+    driver: local
