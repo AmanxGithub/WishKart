@@ -67,7 +67,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     @Operation(summary = "Request password reset")
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestParam String email) {
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestParam("email") String email) {
         authService.requestPasswordReset(email);
         return ResponseEntity.ok(ApiResponse.success("Password reset email sent"));
     }
@@ -75,15 +75,15 @@ public class AuthController {
     @PostMapping("/reset-password")
     @Operation(summary = "Reset password with token")
     public ResponseEntity<ApiResponse<Void>> resetPassword(
-            @RequestParam String token,
-            @RequestParam String newPassword) {
+            @RequestParam("token") String token,
+            @RequestParam("newPassword") String newPassword) {
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok(ApiResponse.success("Password reset successful"));
     }
 
     @GetMapping("/verify-email")
     @Operation(summary = "Verify email with token")
-    public ResponseEntity<ApiResponse<Void>> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(@RequestParam("token") String token) {
         authService.verifyEmail(token);
         return ResponseEntity.ok(ApiResponse.success("Email verified successfully"));
     }

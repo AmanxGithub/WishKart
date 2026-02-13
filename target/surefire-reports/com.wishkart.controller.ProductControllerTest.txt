@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.wishkart.controller.ProductControllerTest
 -------------------------------------------------------------------------------
-Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.531 s -- in com.wishkart.controller.ProductControllerTest
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.264 s -- in com.wishkart.controller.ProductControllerTest

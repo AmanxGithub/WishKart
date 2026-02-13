@@ -46,8 +46,8 @@ public class CartController {
     @PutMapping("/update/{productId}")
     @Operation(summary = "Update cart item quantity")
     public ResponseEntity<ApiResponse<CartDTO>> updateCartItem(
-            @PathVariable Long productId,
-            @RequestParam int quantity) {
+            @PathVariable("productId") Long productId,
+            @RequestParam("quantity") int quantity) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         CartDTO cart = cartService.updateCartItemQuantity(userId, productId, quantity);
@@ -56,7 +56,7 @@ public class CartController {
 
     @DeleteMapping("/remove/{productId}")
     @Operation(summary = "Remove item from cart")
-    public ResponseEntity<ApiResponse<CartDTO>> removeFromCart(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<CartDTO>> removeFromCart(@PathVariable("productId") Long productId) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         CartDTO cart = cartService.removeFromCart(userId, productId);

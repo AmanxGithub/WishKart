@@ -45,8 +45,8 @@ public class OrderController {
     @GetMapping
     @Operation(summary = "Get current user's orders")
     public ResponseEntity<ApiResponse<PagedResponse<OrderDTO>>> getMyOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         Page<OrderDTO> orders = orderService.getOrdersByUser(userId,
@@ -56,7 +56,7 @@ public class OrderController {
 
     @GetMapping("/{orderNumber}")
     @Operation(summary = "Get order by order number")
-    public ResponseEntity<ApiResponse<OrderDTO>> getOrderByNumber(@PathVariable String orderNumber) {
+    public ResponseEntity<ApiResponse<OrderDTO>> getOrderByNumber(@PathVariable("orderNumber") String orderNumber) {
         OrderDTO order = orderService.getOrderByNumber(orderNumber);
         
         // Verify the order belongs to the current user (unless admin)
@@ -72,8 +72,8 @@ public class OrderController {
     @PostMapping("/{orderId}/cancel")
     @Operation(summary = "Cancel an order")
     public ResponseEntity<ApiResponse<OrderDTO>> cancelOrder(
-            @PathVariable Long orderId,
-            @RequestParam(required = false) String reason) {
+            @PathVariable("orderId") Long orderId,
+            @RequestParam(name = "reason", required = false) String reason) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         
@@ -89,7 +89,7 @@ public class OrderController {
 
     @PostMapping("/{orderId}/payment-intent")
     @Operation(summary = "Create payment intent for order")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createPaymentIntent(@PathVariable Long orderId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createPaymentIntent(@PathVariable("orderId") Long orderId) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         
@@ -105,7 +105,7 @@ public class OrderController {
 
     @PostMapping("/payment/confirm")
     @Operation(summary = "Confirm payment")
-    public ResponseEntity<ApiResponse<OrderDTO>> confirmPayment(@RequestParam String paymentIntentId) {
+    public ResponseEntity<ApiResponse<OrderDTO>> confirmPayment(@RequestParam("paymentIntentId") String paymentIntentId) {
         OrderDTO order = paymentService.confirmPayment(paymentIntentId);
         return ResponseEntity.ok(ApiResponse.success("Payment confirmed", order));
     }

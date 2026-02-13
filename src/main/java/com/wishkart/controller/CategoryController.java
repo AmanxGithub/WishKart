@@ -38,21 +38,21 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get category by ID")
-    public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryById(@PathVariable("id") Long id) {
         CategoryDTO category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(ApiResponse.success(category));
     }
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Get category by slug")
-    public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryBySlug(@PathVariable String slug) {
+    public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryBySlug(@PathVariable("slug") String slug) {
         CategoryDTO category = categoryService.getCategoryBySlug(slug);
         return ResponseEntity.ok(ApiResponse.success(category));
     }
 
     @GetMapping("/{parentId}/subcategories")
     @Operation(summary = "Get subcategories of a category")
-    public ResponseEntity<ApiResponse<List<CategoryDTO>>> getSubcategories(@PathVariable Long parentId) {
+    public ResponseEntity<ApiResponse<List<CategoryDTO>>> getSubcategories(@PathVariable("parentId") Long parentId) {
         List<CategoryDTO> subcategories = categoryService.getSubcategories(parentId);
         return ResponseEntity.ok(ApiResponse.success(subcategories));
     }

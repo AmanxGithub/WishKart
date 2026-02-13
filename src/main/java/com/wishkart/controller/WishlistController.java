@@ -35,7 +35,7 @@ public class WishlistController {
 
     @PostMapping("/add/{productId}")
     @Operation(summary = "Add product to wishlist")
-    public ResponseEntity<ApiResponse<WishlistDTO>> addToWishlist(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<WishlistDTO>> addToWishlist(@PathVariable("productId") Long productId) {
         Long userId = getCurrentUserId();
         WishlistDTO wishlist = wishlistService.addToWishlist(userId, productId);
         return ResponseEntity.ok(ApiResponse.success("Added to wishlist", wishlist));
@@ -43,7 +43,7 @@ public class WishlistController {
 
     @DeleteMapping("/remove/{productId}")
     @Operation(summary = "Remove product from wishlist")
-    public ResponseEntity<ApiResponse<WishlistDTO>> removeFromWishlist(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<WishlistDTO>> removeFromWishlist(@PathVariable("productId") Long productId) {
         Long userId = getCurrentUserId();
         WishlistDTO wishlist = wishlistService.removeFromWishlist(userId, productId);
         return ResponseEntity.ok(ApiResponse.success("Removed from wishlist", wishlist));
@@ -51,7 +51,7 @@ public class WishlistController {
 
     @PostMapping("/toggle/{productId}")
     @Operation(summary = "Toggle product in wishlist (add/remove)")
-    public ResponseEntity<ApiResponse<WishlistDTO>> toggleWishlistItem(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<WishlistDTO>> toggleWishlistItem(@PathVariable("productId") Long productId) {
         Long userId = getCurrentUserId();
         WishlistDTO wishlist = wishlistService.toggleWishlistItem(userId, productId);
         String message = wishlist.getProducts().stream()
@@ -71,7 +71,7 @@ public class WishlistController {
 
     @GetMapping("/check/{productId}")
     @Operation(summary = "Check if product is in wishlist")
-    public ResponseEntity<ApiResponse<Boolean>> isInWishlist(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<Boolean>> isInWishlist(@PathVariable("productId") Long productId) {
         Long userId = getCurrentUserId();
         boolean inWishlist = wishlistService.isInWishlist(userId, productId);
         return ResponseEntity.ok(ApiResponse.success(inWishlist));
@@ -87,7 +87,7 @@ public class WishlistController {
 
     @PostMapping("/move-to-cart/{productId}")
     @Operation(summary = "Move item from wishlist to cart")
-    public ResponseEntity<ApiResponse<WishlistDTO>> moveToCart(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<WishlistDTO>> moveToCart(@PathVariable("productId") Long productId) {
         Long userId = getCurrentUserId();
         WishlistDTO wishlist = wishlistService.moveToCart(userId, productId, cartService);
         return ResponseEntity.ok(ApiResponse.success("Moved to cart", wishlist));

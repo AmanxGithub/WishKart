@@ -31,10 +31,10 @@ public class ReviewController {
     @GetMapping("/products/{productId}/reviews")
     @Operation(summary = "Get reviews for a product")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewDTO>>> getProductReviews(
-            @PathVariable Long productId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "newest") String sort) {
+            @PathVariable("productId") Long productId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "newest") String sort) {
         PagedResponse<ReviewDTO> reviews = reviewService.getProductReviews(productId, page, size, sort);
         return ResponseEntity.ok(ApiResponse.success(reviews));
     }
@@ -42,7 +42,7 @@ public class ReviewController {
     @GetMapping("/products/{productId}/reviews/stats")
     @Operation(summary = "Get review statistics for a product")
     public ResponseEntity<ApiResponse<ReviewService.ReviewStatsDTO>> getProductReviewStats(
-            @PathVariable Long productId) {
+            @PathVariable("productId") Long productId) {
         ReviewService.ReviewStatsDTO stats = reviewService.getProductReviewStats(productId);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
@@ -64,8 +64,8 @@ public class ReviewController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get current user's reviews")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewDTO>>> getMyReviews(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         PagedResponse<ReviewDTO> reviews = reviewService.getUserReviews(userId, page, size);
@@ -76,7 +76,7 @@ public class ReviewController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update a review")
     public ResponseEntity<ApiResponse<ReviewDTO>> updateReview(
-            @PathVariable Long reviewId,
+            @PathVariable("reviewId") Long reviewId,
             @Valid @RequestBody CreateReviewRequest request) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
@@ -87,7 +87,7 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Delete a review")
-    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
+    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable("reviewId") Long reviewId) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         reviewService.deleteReview(reviewId, userId);
@@ -97,7 +97,7 @@ public class ReviewController {
     @PostMapping("/reviews/{reviewId}/helpful")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Mark a review as helpful")
-    public ResponseEntity<ApiResponse<ReviewDTO>> markAsHelpful(@PathVariable Long reviewId) {
+    public ResponseEntity<ApiResponse<ReviewDTO>> markAsHelpful(@PathVariable("reviewId") Long reviewId) {
         ReviewDTO review = reviewService.markAsHelpful(reviewId);
         return ResponseEntity.ok(ApiResponse.success(review));
     }
@@ -109,8 +109,8 @@ public class ReviewController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get pending reviews for moderation")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewDTO>>> getPendingReviews(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
         PagedResponse<ReviewDTO> reviews = reviewService.getPendingReviews(page, size);
         return ResponseEntity.ok(ApiResponse.success(reviews));
     }
@@ -120,8 +120,8 @@ public class ReviewController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Approve or reject a review")
     public ResponseEntity<ApiResponse<ReviewDTO>> moderateReview(
-            @PathVariable Long reviewId,
-            @RequestParam boolean approved) {
+            @PathVariable("reviewId") Long reviewId,
+            @RequestParam("approved") boolean approved) {
         ReviewDTO review = reviewService.moderateReview(reviewId, approved);
         String message = approved ? "Review approved" : "Review rejected";
         return ResponseEntity.ok(ApiResponse.success(message, review));
@@ -131,7 +131,7 @@ public class ReviewController {
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Admin delete any review")
-    public ResponseEntity<ApiResponse<Void>> adminDeleteReview(@PathVariable Long reviewId) {
+    public ResponseEntity<ApiResponse<Void>> adminDeleteReview(@PathVariable("reviewId") Long reviewId) {
         reviewService.adminDeleteReview(reviewId);
         return ResponseEntity.ok(ApiResponse.success("Review deleted by admin"));
     }

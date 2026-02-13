@@ -35,9 +35,9 @@ public class ProfileController {
     @PutMapping
     @Operation(summary = "Update profile")
     public ResponseEntity<ApiResponse<UserDTO>> updateProfile(
-            @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) String phone) {
+            @RequestParam(name = "firstName", required = false) String firstName,
+            @RequestParam(name = "lastName", required = false) String lastName,
+            @RequestParam(name = "phone", required = false) String phone) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         UserDTO user = userService.updateProfile(userId, firstName, lastName, phone);
@@ -47,8 +47,8 @@ public class ProfileController {
     @PutMapping("/password")
     @Operation(summary = "Change password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
-            @RequestParam String currentPassword,
-            @RequestParam String newPassword) {
+            @RequestParam("currentPassword") String currentPassword,
+            @RequestParam("newPassword") String newPassword) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
         userService.changePassword(userId, currentPassword, newPassword);

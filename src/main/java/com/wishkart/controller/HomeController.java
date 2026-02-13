@@ -47,10 +47,10 @@ public class HomeController {
 
     @GetMapping("/products")
     public String products(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) Long category,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "category", required = false) Long category,
             Model model) {
 
         Page<ProductDTO> productPage;
@@ -77,7 +77,7 @@ public class HomeController {
     }
 
     @GetMapping("/products/{slug}")
-    public String productDetail(@PathVariable String slug, Model model) {
+    public String productDetail(@PathVariable("slug") String slug, Model model) {
         ProductDTO product = productService.getProductBySlug(slug);
         model.addAttribute("product", product);
         model.addAttribute("isAuthenticated", SecurityUtil.isAuthenticated());
@@ -97,9 +97,9 @@ public class HomeController {
 
     @GetMapping("/categories/{slug}")
     public String categoryPage(
-            @PathVariable String slug,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
+            @PathVariable("slug") String slug,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
             Model model) {
 
         CategoryDTO category = categoryService.getCategoryBySlug(slug);

@@ -30,10 +30,10 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "Get all products with pagination")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
         
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -43,14 +43,14 @@ public class ProductController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get product by ID")
-    public ResponseEntity<ApiResponse<ProductDTO>> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ProductDTO>> getProductById(@PathVariable("id") Long id) {
         ProductDTO product = productService.getProductById(id);
         return ResponseEntity.ok(ApiResponse.success(product));
     }
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Get product by slug")
-    public ResponseEntity<ApiResponse<ProductDTO>> getProductBySlug(@PathVariable String slug) {
+    public ResponseEntity<ApiResponse<ProductDTO>> getProductBySlug(@PathVariable("slug") String slug) {
         ProductDTO product = productService.getProductBySlug(slug);
         return ResponseEntity.ok(ApiResponse.success(product));
     }
@@ -58,11 +58,11 @@ public class ProductController {
     @GetMapping("/category/{categoryId}")
     @Operation(summary = "Get products by category")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getProductsByCategory(
-            @PathVariable Long categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @PathVariable("categoryId") Long categoryId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
         
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -73,9 +73,9 @@ public class ProductController {
     @GetMapping("/search")
     @Operation(summary = "Search products")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> searchProducts(
-            @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
+            @RequestParam("q") String q,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDTO> products = productService.searchProducts(q, pageable);
@@ -85,10 +85,10 @@ public class ProductController {
     @GetMapping("/filter/price")
     @Operation(summary = "Filter products by price range")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getProductsByPriceRange(
-            @RequestParam BigDecimal minPrice,
-            @RequestParam BigDecimal maxPrice,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
+            @RequestParam("minPrice") BigDecimal minPrice,
+            @RequestParam("maxPrice") BigDecimal maxPrice,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDTO> products = productService.getProductsByPriceRange(minPrice, maxPrice, pageable);
@@ -98,8 +98,8 @@ public class ProductController {
     @GetMapping("/featured")
     @Operation(summary = "Get featured products")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getFeaturedProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDTO> products = productService.getFeaturedProducts(pageable);
@@ -109,8 +109,8 @@ public class ProductController {
     @GetMapping("/new-arrivals")
     @Operation(summary = "Get new arrival products")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getNewArrivals(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDTO> products = productService.getNewArrivals(pageable);
@@ -120,8 +120,8 @@ public class ProductController {
     @GetMapping("/best-sellers")
     @Operation(summary = "Get best selling products")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getBestSellers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDTO> products = productService.getBestSellers(pageable);

@@ -78,9 +78,9 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "Get all users")
     public ResponseEntity<ApiResponse<PagedResponse<UserDTO>>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String search) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "search", required = false) String search) {
 
         Page<UserDTO> users;
         if (search != null && !search.isBlank()) {
@@ -93,14 +93,14 @@ public class AdminController {
 
     @GetMapping("/users/{id}")
     @Operation(summary = "Get user by ID")
-    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable("id") Long id) {
         UserDTO user = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
 
     @PutMapping("/users/{id}/toggle-status")
     @Operation(summary = "Enable/disable user")
-    public ResponseEntity<ApiResponse<Void>> toggleUserStatus(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> toggleUserStatus(@PathVariable("id") Long id) {
         userService.toggleUserStatus(id);
         return ResponseEntity.ok(ApiResponse.success("User status updated"));
     }
@@ -108,8 +108,8 @@ public class AdminController {
     @PutMapping("/users/{id}/role")
     @Operation(summary = "Change user role")
     public ResponseEntity<ApiResponse<Void>> changeUserRole(
-            @PathVariable Long id,
-            @RequestParam String role) {
+            @PathVariable("id") Long id,
+            @RequestParam("role") String role) {
         userService.changeUserRole(id, User.Role.valueOf(role.toUpperCase()));
         return ResponseEntity.ok(ApiResponse.success("User role updated"));
     }
@@ -119,8 +119,8 @@ public class AdminController {
     @GetMapping("/products")
     @Operation(summary = "Get all products (including inactive)")
     public ResponseEntity<ApiResponse<PagedResponse<ProductDTO>>> getAllProductsAdmin(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
 
         Page<ProductDTO> products = productService.getAllProductsAdmin(
             PageRequest.of(page, size, Sort.by("createdAt").descending()));
@@ -137,7 +137,7 @@ public class AdminController {
     @PutMapping("/products/{id}")
     @Operation(summary = "Update product")
     public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody CreateProductRequest request) {
         ProductDTO product = productService.updateProduct(id, request);
         return ResponseEntity.ok(ApiResponse.success("Product updated", product));
@@ -145,7 +145,7 @@ public class AdminController {
 
     @DeleteMapping("/products/{id}")
     @Operation(summary = "Delete product")
-    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable("id") Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.success("Product deleted"));
     }
@@ -153,8 +153,8 @@ public class AdminController {
     @PutMapping("/products/{id}/stock")
     @Operation(summary = "Update product stock")
     public ResponseEntity<ApiResponse<Void>> updateStock(
-            @PathVariable Long id,
-            @RequestParam int quantity) {
+            @PathVariable("id") Long id,
+            @RequestParam("quantity") int quantity) {
         productService.updateStock(id, quantity);
         return ResponseEntity.ok(ApiResponse.success("Stock updated"));
     }
@@ -178,11 +178,11 @@ public class AdminController {
     @PostMapping("/categories")
     @Operation(summary = "Create new category")
     public ResponseEntity<ApiResponse<CategoryDTO>> createCategory(
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String imageUrl,
-            @RequestParam(required = false) Long parentId,
-            @RequestParam(required = false) Integer displayOrder) {
+            @RequestParam("name") String name,
+            @RequestParam(name = "description", required = false) String description,
+            @RequestParam(name = "imageUrl", required = false) String imageUrl,
+            @RequestParam(name = "parentId", required = false) Long parentId,
+            @RequestParam(name = "displayOrder", required = false) Integer displayOrder) {
         CategoryDTO category = categoryService.createCategory(name, description, imageUrl, parentId, displayOrder);
         return ResponseEntity.ok(ApiResponse.success("Category created", category));
     }
@@ -190,20 +190,20 @@ public class AdminController {
     @PutMapping("/categories/{id}")
     @Operation(summary = "Update category")
     public ResponseEntity<ApiResponse<CategoryDTO>> updateCategory(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String imageUrl,
-            @RequestParam(required = false) Long parentId,
-            @RequestParam(required = false) Integer displayOrder,
-            @RequestParam(required = false) Boolean active) {
+            @RequestParam(name = "description", required = false) String description,
+            @RequestParam(name = "imageUrl", required = false) String imageUrl,
+            @RequestParam(name = "parentId", required = false) Long parentId,
+            @RequestParam(name = "displayOrder", required = false) Integer displayOrder,
+            @RequestParam(name = "active", required = false) Boolean active) {
         CategoryDTO category = categoryService.updateCategory(id, name, description, imageUrl, parentId, displayOrder, active);
         return ResponseEntity.ok(ApiResponse.success("Category updated", category));
     }
 
     @DeleteMapping("/categories/{id}")
     @Operation(summary = "Delete category")
-    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable("id") Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.ok(ApiResponse.success("Category deleted"));
     }
@@ -213,9 +213,9 @@ public class AdminController {
     @GetMapping("/orders")
     @Operation(summary = "Get all orders")
     public ResponseEntity<ApiResponse<PagedResponse<OrderDTO>>> getAllOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "status", required = false) String status) {
 
         Page<OrderDTO> orders;
         if (status != null && !status.isBlank()) {
@@ -233,7 +233,7 @@ public class AdminController {
 
     @GetMapping("/orders/{id}")
     @Operation(summary = "Get order details")
-    public ResponseEntity<ApiResponse<OrderDTO>> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<OrderDTO>> getOrderById(@PathVariable("id") Long id) {
         OrderDTO order = orderService.getOrderById(id);
         return ResponseEntity.ok(ApiResponse.success(order));
     }
@@ -241,8 +241,8 @@ public class AdminController {
     @PutMapping("/orders/{id}/status")
     @Operation(summary = "Update order status")
     public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
-            @PathVariable Long id,
-            @RequestParam String status) {
+            @PathVariable("id") Long id,
+            @RequestParam("status") String status) {
         OrderDTO order = orderService.updateOrderStatus(id, Order.OrderStatus.valueOf(status.toUpperCase()));
         return ResponseEntity.ok(ApiResponse.success("Order status updated", order));
     }
@@ -250,8 +250,8 @@ public class AdminController {
     @PutMapping("/orders/{id}/tracking")
     @Operation(summary = "Add tracking number to order")
     public ResponseEntity<ApiResponse<OrderDTO>> addTrackingNumber(
-            @PathVariable Long id,
-            @RequestParam String trackingNumber) {
+            @PathVariable("id") Long id,
+            @RequestParam("trackingNumber") String trackingNumber) {
         OrderDTO order = orderService.addTrackingNumber(id, trackingNumber);
         return ResponseEntity.ok(ApiResponse.success("Tracking number added", order));
     }
@@ -259,8 +259,8 @@ public class AdminController {
     @PostMapping("/orders/{id}/cancel")
     @Operation(summary = "Cancel order")
     public ResponseEntity<ApiResponse<OrderDTO>> cancelOrder(
-            @PathVariable Long id,
-            @RequestParam(required = false) String reason) {
+            @PathVariable("id") Long id,
+            @RequestParam(name = "reason", required = false) String reason) {
         OrderDTO order = orderService.cancelOrder(id, reason);
         return ResponseEntity.ok(ApiResponse.success("Order cancelled", order));
     }
@@ -270,7 +270,7 @@ public class AdminController {
     @GetMapping("/analytics/revenue")
     @Operation(summary = "Get revenue analytics")
     public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> getRevenueAnalytics(
-            @RequestParam(required = false) String period) {
+            @RequestParam(name = "period", required = false) String period) {
 
         Map<String, BigDecimal> analytics = new HashMap<>();
         LocalDateTime now = LocalDateTime.now();
