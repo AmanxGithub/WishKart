@@ -49,7 +49,7 @@ spring:
 
 # Server Configuration
 server:
-  port: 8080
+  port: 8085
   error:
     include-message: always
     include-binding-errors: always
