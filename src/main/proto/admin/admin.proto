@@ -1,0 +1,376 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.admin;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.admin";
+option java_outer_classname = "AdminProto";
+
+import "google/protobuf/timestamp.proto";
+
+service AdminService {
+  // Dashboard
+  rpc GetDashboardStats(Empty) returns (DashboardStatsResponse);
+
+  // User Management
+  rpc GetAllUsers(GetUsersRequest) returns (UserListResponse);
+  rpc GetUserById(UserIdRequest) returns (UserResponse);
+  rpc ToggleUserStatus(UserIdRequest) returns (ApiResponse);
+  rpc ChangeUserRole(ChangeUserRoleRequest) returns (ApiResponse);
+
+  // Product Management
+  rpc GetAllProductsAdmin(PaginationRequest) returns (ProductListResponse);
+  rpc CreateProduct(CreateProductRequest) returns (ProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+  rpc DeleteProduct(ProductIdRequest) returns (ApiResponse);
+  rpc UpdateStock(UpdateStockRequest) returns (ApiResponse);
+  rpc GetLowStockProducts(Empty) returns (ProductListResponse);
+  rpc GetOutOfStockProducts(Empty) returns (ProductListResponse);
+
+  // Category Management
+  rpc CreateCategory(CreateCategoryRequest) returns (CategoryResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (CategoryResponse);
+  rpc DeleteCategory(CategoryIdRequest) returns (ApiResponse);
+
+  // Order Management
+  rpc GetAllOrders(GetOrdersRequest) returns (OrderListResponse);
+  rpc GetOrderById(OrderIdRequest) returns (OrderResponse);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (OrderResponse);
+  rpc AddTrackingNumber(AddTrackingRequest) returns (OrderResponse);
+  rpc AdminCancelOrder(AdminCancelOrderRequest) returns (OrderResponse);
+
+  // Analytics
+  rpc GetRevenueAnalytics(AnalyticsPeriodRequest) returns (RevenueAnalyticsResponse);
+
+  // Review Moderation
+  rpc GetPendingReviews(PaginationRequest) returns (PendingReviewsResponse);
+  rpc ModerateReview(ModerateReviewRequest) returns (ApiResponse);
+  rpc AdminDeleteReview(ReviewIdRequest) returns (ApiResponse);
+}
+
+// Common messages
+message Empty {}
+
+message ApiResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message PaginationRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string sort_by = 3;
+  string sort_direction = 4;
+}
+
+message PaginationInfo {
+  int32 page = 1;
+  int32 size = 2;
+  int64 total_elements = 3;
+  int32 total_pages = 4;
+  bool first = 5;
+  bool last = 6;
+  bool has_next = 7;
+  bool has_previous = 8;
+}
+
+// Dashboard
+message DashboardStatsResponse {
+  bool success = 1;
+  int64 total_users = 2;
+  int64 total_customers = 3;
+  int64 total_admins = 4;
+  int64 total_products = 5;
+  int64 low_stock_products = 6;
+  int64 total_categories = 7;
+  int64 total_orders = 8;
+  int64 pending_orders = 9;
+  int64 processing_orders = 10;
+  int64 orders_today = 11;
+  string total_revenue = 12;
+  string revenue_today = 13;
+}
+
+// User messages
+message UserInfo {
+  int64 id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone = 5;
+  string role = 6;
+  bool enabled = 7;
+  bool email_verified = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message GetUsersRequest {
+  PaginationRequest pagination = 1;
+  string search = 2;
+}
+
+message UserIdRequest {
+  int64 id = 1;
+}
+
+message ChangeUserRoleRequest {
+  int64 id = 1;
+  string role = 2;
+}
+
+message UserResponse {
+  bool success = 1;
+  UserInfo user = 2;
+}
+
+message UserListResponse {
+  bool success = 1;
+  repeated UserInfo users = 2;
+  PaginationInfo pagination = 3;
+}
+
+// Product messages
+message Product {
+  int64 id = 1;
+  string name = 2;
+  string sku = 3;
+  string slug = 4;
+  string description = 5;
+  string short_description = 6;
+  string price = 7;
+  string compare_at_price = 8;
+  int32 stock_quantity = 9;
+  bool in_stock = 10;
+  bool low_stock = 11;
+  bool active = 12;
+  bool featured = 13;
+  string weight = 14;
+  string weight_unit = 15;
+  int64 category_id = 16;
+  string category_name = 17;
+  string primary_image = 18;
+  repeated string images = 19;
+  double average_rating = 20;
+  int32 review_count = 21;
+  string discount_percentage = 22;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string sku = 2;
+  string description = 3;
+  string short_description = 4;
+  string price = 5;
+  string compare_at_price = 6;
+  string cost_price = 7;
+  int32 stock_quantity = 8;
+  int32 low_stock_threshold = 9;
+  bool track_inventory = 10;
+  bool active = 11;
+  bool featured = 12;
+  string weight = 13;
+  string weight_unit = 14;
+  int64 category_id = 15;
+  repeated string image_urls = 16;
+  string meta_title = 17;
+  string meta_description = 18;
+}
+
+message UpdateProductRequest {
+  int64 id = 1;
+  CreateProductRequest product = 2;
+}
+
+message ProductIdRequest {
+  int64 id = 1;
+}
+
+message UpdateStockRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message ProductResponse {
+  bool success = 1;
+  string message = 2;
+  Product product = 3;
+}
+
+message ProductListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Product products = 3;
+  PaginationInfo pagination = 4;
+}
+
+// Category messages
+message Category {
+  int64 id = 1;
+  string name = 2;
+  string slug = 3;
+  string description = 4;
+  string image_url = 5;
+  bool active = 6;
+  int32 display_order = 7;
+  int64 parent_id = 8;
+  string parent_name = 9;
+  repeated Category subcategories = 10;
+  int32 product_count = 11;
+}
+
+message CreateCategoryRequest {
+  string name = 1;
+  string description = 2;
+  string image_url = 3;
+  int64 parent_id = 4;
+  int32 display_order = 5;
+}
+
+message UpdateCategoryRequest {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string image_url = 4;
+  int64 parent_id = 5;
+  int32 display_order = 6;
+  bool active = 7;
+}
+
+message CategoryIdRequest {
+  int64 id = 1;
+}
+
+message CategoryResponse {
+  bool success = 1;
+  string message = 2;
+  Category category = 3;
+}
+
+// Order messages
+message OrderItem {
+  int64 id = 1;
+  int64 product_id = 2;
+  string product_name = 3;
+  string product_image = 4;
+  string sku = 5;
+  string unit_price = 6;
+  int32 quantity = 7;
+  string subtotal = 8;
+}
+
+message Order {
+  int64 id = 1;
+  string order_number = 2;
+  int64 user_id = 3;
+  string user_name = 4;
+  string user_email = 5;
+  repeated OrderItem items = 6;
+  string status = 7;
+  string subtotal = 8;
+  string shipping_cost = 9;
+  string tax_amount = 10;
+  string discount_amount = 11;
+  string total_amount = 12;
+  string coupon_code = 13;
+  string payment_method = 14;
+  string payment_status = 15;
+  string payment_intent_id = 16;
+  google.protobuf.Timestamp paid_at = 17;
+  string shipping_name = 18;
+  string shipping_address = 19;
+  string shipping_city = 20;
+  string shipping_state = 21;
+  string shipping_postal_code = 22;
+  string shipping_country = 23;
+  string shipping_phone = 24;
+  string tracking_number = 25;
+  google.protobuf.Timestamp shipped_at = 26;
+  google.protobuf.Timestamp delivered_at = 27;
+  google.protobuf.Timestamp cancelled_at = 28;
+  string cancellation_reason = 29;
+  string customer_notes = 30;
+  int32 total_item_count = 31;
+  google.protobuf.Timestamp created_at = 32;
+}
+
+message GetOrdersRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+}
+
+message OrderIdRequest {
+  int64 id = 1;
+}
+
+message UpdateOrderStatusRequest {
+  int64 id = 1;
+  string status = 2;
+}
+
+message AddTrackingRequest {
+  int64 id = 1;
+  string tracking_number = 2;
+}
+
+message AdminCancelOrderRequest {
+  int64 id = 1;
+  string reason = 2;
+}
+
+message OrderResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+message OrderListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Order orders = 3;
+  PaginationInfo pagination = 4;
+}
+
+// Analytics
+message AnalyticsPeriodRequest {
+  string period = 1;
+}
+
+message RevenueAnalyticsResponse {
+  bool success = 1;
+  string today = 2;
+  string this_week = 3;
+  string this_month = 4;
+  string total = 5;
+}
+
+// Review messages
+message Review {
+  int64 id = 1;
+  int64 product_id = 2;
+  string product_name = 3;
+  int64 user_id = 4;
+  string user_name = 5;
+  int32 rating = 6;
+  string title = 7;
+  string comment = 8;
+  bool verified = 9;
+  bool approved = 10;
+  int32 helpful_count = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message PendingReviewsResponse {
+  bool success = 1;
+  repeated Review reviews = 2;
+  PaginationInfo pagination = 3;
+}
+
+message ModerateReviewRequest {
+  int64 review_id = 1;
+  bool approved = 2;
+}
+
+message ReviewIdRequest {
+  int64 review_id = 1;
+}

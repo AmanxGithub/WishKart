@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.product;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.product";
+option java_outer_classname = "ProductProto";
+
+service ProductService {
+  // Get all products with pagination
+  rpc GetAllProducts(GetProductsRequest) returns (ProductListResponse);
+
+  // Get product by ID
+  rpc GetProductById(ProductIdRequest) returns (ProductResponse);
+
+  // Get product by slug
+  rpc GetProductBySlug(ProductSlugRequest) returns (ProductResponse);
+
+  // Get products by category
+  rpc GetProductsByCategory(GetProductsByCategoryRequest) returns (ProductListResponse);
+
+  // Search products
+  rpc SearchProducts(SearchProductsRequest) returns (ProductListResponse);
+
+  // Get products by price range
+  rpc GetProductsByPriceRange(PriceRangeRequest) returns (ProductListResponse);
+
+  // Get featured products
+  rpc GetFeaturedProducts(PaginationRequest) returns (ProductListResponse);
+
+  // Get new arrivals
+  rpc GetNewArrivals(PaginationRequest) returns (ProductListResponse);
+
+  // Get best sellers
+  rpc GetBestSellers(PaginationRequest) returns (ProductListResponse);
+}
+
+// Common messages
+message PaginationRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string sort_by = 3;
+  string sort_direction = 4;
+}
+
+message PaginationInfo {
+  int32 page = 1;
+  int32 size = 2;
+  int64 total_elements = 3;
+  int32 total_pages = 4;
+  bool first = 5;
+  bool last = 6;
+  bool has_next = 7;
+  bool has_previous = 8;
+}
+
+message GetProductsRequest {
+  PaginationRequest pagination = 1;
+}
+
+message ProductIdRequest {
+  int64 id = 1;
+}
+
+message ProductSlugRequest {
+  string slug = 1;
+}
+
+message GetProductsByCategoryRequest {
+  int64 category_id = 1;
+  PaginationRequest pagination = 2;
+}
+
+message SearchProductsRequest {
+  string query = 1;
+  PaginationRequest pagination = 2;
+}
+
+message PriceRangeRequest {
+  string min_price = 1;
+  string max_price = 2;
+  PaginationRequest pagination = 3;
+}
+
+message Product {
+  int64 id = 1;
+  string name = 2;
+  string sku = 3;
+  string slug = 4;
+  string description = 5;
+  string short_description = 6;
+  string price = 7;
+  string compare_at_price = 8;
+  int32 stock_quantity = 9;
+  bool in_stock = 10;
+  bool low_stock = 11;
+  bool active = 12;
+  bool featured = 13;
+  string weight = 14;
+  string weight_unit = 15;
+  int64 category_id = 16;
+  string category_name = 17;
+  string primary_image = 18;
+  string primary_image_url = 23;  // Added to match REST response
+  repeated string images = 19;
+  double average_rating = 20;
+  int32 review_count = 21;
+  string discount_percentage = 22;
+}
+
+message ProductResponse {
+  bool success = 1;
+  string message = 2;
+  Product product = 3;
+  string timestamp = 4;  // Added to match REST response
+}
+
+message ProductListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Product products = 3;
+  PaginationInfo pagination = 4;
+}

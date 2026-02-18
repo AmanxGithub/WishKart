@@ -19,6 +19,13 @@ spring:
     host: localhost
     port: 3025
 
+  autoconfigure:
+    exclude:
+      - net.devh.boot.grpc.server.autoconfigure.GrpcServerAutoConfiguration
+      - net.devh.boot.grpc.server.autoconfigure.GrpcServerFactoryAutoConfiguration
+      - net.devh.boot.grpc.server.autoconfigure.GrpcServerSecurityAutoConfiguration
+      - net.devh.boot.grpc.server.autoconfigure.GrpcServerMetricAutoConfiguration
+
 jwt:
   secret: TestSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForTesting
   expiration: 3600000
@@ -37,6 +44,11 @@ wishkart:
     default-page-size: 10
   inventory:
     low-stock-threshold: 5
+
+# Disable gRPC server for tests
+grpc:
+  server:
+    port: -1
 
 logging:
   level:

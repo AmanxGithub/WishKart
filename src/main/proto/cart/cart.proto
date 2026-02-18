@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.cart;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.cart";
+option java_outer_classname = "CartProto";
+
+import "google/protobuf/timestamp.proto";
+
+service CartService {
+  // Get current user's cart
+  rpc GetCart(Empty) returns (CartResponse);
+
+  // Add item to cart
+  rpc AddToCart(AddToCartRequest) returns (CartResponse);
+
+  // Update cart item quantity
+  rpc UpdateCartItem(UpdateCartItemRequest) returns (CartResponse);
+
+  // Remove item from cart
+  rpc RemoveFromCart(RemoveFromCartRequest) returns (CartResponse);
+
+  // Clear cart
+  rpc ClearCart(Empty) returns (CartResponse);
+
+  // Get cart item count
+  rpc GetCartItemCount(Empty) returns (CartCountResponse);
+
+  // Apply coupon to cart
+  rpc ApplyCoupon(ApplyCouponRequest) returns (CartResponse);
+
+  // Remove coupon from cart
+  rpc RemoveCoupon(Empty) returns (CartResponse);
+}
+
+// Common messages
+message Empty {}
+
+message ApiResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message AddToCartRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message UpdateCartItemRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message RemoveFromCartRequest {
+  int64 product_id = 1;
+}
+
+message ApplyCouponRequest {
+  string coupon_code = 1;
+}
+
+message CartItem {
+  int64 id = 1;
+  int64 product_id = 2;
+  string product_name = 3;
+  string product_image = 4;
+  string product_price = 5;
+  int32 quantity = 6;
+  string subtotal = 7;
+  bool in_stock = 8;
+  int32 available_stock = 9;
+}
+
+message Cart {
+  int64 id = 1;
+  repeated CartItem items = 2;
+  string coupon_code = 3;
+  string discount_amount = 4;
+  string subtotal = 5;
+  string total = 6;
+  int32 total_items = 7;
+  int32 unique_item_count = 8;
+}
+
+message CartResponse {
+  bool success = 1;
+  string message = 2;
+  Cart cart = 3;
+}
+
+message CartCountResponse {
+  bool success = 1;
+  int32 count = 2;
+}

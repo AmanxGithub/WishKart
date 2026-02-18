@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.wishlist;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.wishlist";
+option java_outer_classname = "WishlistProto";
+
+import "google/protobuf/timestamp.proto";
+
+service WishlistService {
+  rpc GetWishlist(Empty) returns (WishlistResponse);
+  rpc AddToWishlist(ProductIdRequest) returns (WishlistResponse);
+  rpc RemoveFromWishlist(ProductIdRequest) returns (WishlistResponse);
+  rpc ToggleWishlistItem(ProductIdRequest) returns (ToggleWishlistResponse);
+  rpc ClearWishlist(Empty) returns (ApiResponse);
+  rpc IsInWishlist(ProductIdRequest) returns (WishlistCheckResponse);
+  rpc GetWishlistCount(Empty) returns (WishlistCountResponse);
+  rpc MoveToCart(ProductIdRequest) returns (WishlistResponse);
+  rpc MoveAllToCart(Empty) returns (ApiResponse);
+}
+
+message Empty {}
+
+message ApiResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message ProductIdRequest {
+  int64 product_id = 1;
+}
+
+message WishlistProduct {
+  int64 id = 1;
+  string name = 2;
+  string slug = 3;
+  string price = 4;
+  string primary_image = 5;
+  bool in_stock = 6;
+  double average_rating = 7;
+}
+
+message Wishlist {
+  int64 id = 1;
+  int64 user_id = 2;
+  repeated WishlistProduct products = 3;
+  int32 item_count = 4;
+}
+
+message WishlistResponse {
+  bool success = 1;
+  string message = 2;
+  Wishlist wishlist = 3;
+}
+
+message ToggleWishlistResponse {
+  bool success = 1;
+  string message = 2;
+  bool in_wishlist = 3;
+  Wishlist wishlist = 4;
+}
+
+message WishlistCheckResponse {
+  bool in_wishlist = 1;
+}
+
+message WishlistCountResponse {
+  int32 count = 1;
+}

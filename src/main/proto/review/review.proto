@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.review;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.review";
+option java_outer_classname = "ReviewProto";
+
+import "google/protobuf/timestamp.proto";
+
+service ReviewService {
+  // Public: Get product reviews
+  rpc GetProductReviews(GetProductReviewsRequest) returns (ReviewListResponse);
+
+  // Public: Get review statistics
+  rpc GetProductReviewStats(ProductIdRequest) returns (ReviewStatsResponse);
+
+  // Authenticated: Create review
+  rpc CreateReview(CreateReviewRequest) returns (ReviewResponse);
+
+  // Authenticated: Get my reviews
+  rpc GetMyReviews(PaginationRequest) returns (ReviewListResponse);
+
+  // Authenticated: Update review
+  rpc UpdateReview(UpdateReviewRequest) returns (ReviewResponse);
+
+  // Authenticated: Delete review
+  rpc DeleteReview(ReviewIdRequest) returns (ApiResponse);
+
+  // Authenticated: Mark as helpful
+  rpc MarkAsHelpful(ReviewIdRequest) returns (ReviewResponse);
+}
+
+// Common messages
+message ApiResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message PaginationRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string sort_by = 3;
+  string sort_direction = 4;
+}
+
+message PaginationInfo {
+  int32 page = 1;
+  int32 size = 2;
+  int64 total_elements = 3;
+  int32 total_pages = 4;
+  bool first = 5;
+  bool last = 6;
+  bool has_next = 7;
+  bool has_previous = 8;
+}
+
+message ProductIdRequest {
+  int64 product_id = 1;
+}
+
+message ReviewIdRequest {
+  int64 review_id = 1;
+}
+
+message GetProductReviewsRequest {
+  int64 product_id = 1;
+  int32 page = 2;
+  int32 size = 3;
+  string sort = 4;
+}
+
+message CreateReviewRequest {
+  int64 product_id = 1;
+  int32 rating = 2;
+  string title = 3;
+  string comment = 4;
+}
+
+message UpdateReviewRequest {
+  int64 review_id = 1;
+  int32 rating = 2;
+  string title = 3;
+  string comment = 4;
+}
+
+message Review {
+  int64 id = 1;
+  int64 product_id = 2;
+  string product_name = 3;
+  int64 user_id = 4;
+  string user_name = 5;
+  int32 rating = 6;
+  string title = 7;
+  string comment = 8;
+  bool verified = 9;
+  bool approved = 10;
+  int32 helpful_count = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message ReviewStats {
+  double average_rating = 1;
+  int32 total_reviews = 2;
+  int32 five_star_count = 3;
+  int32 four_star_count = 4;
+  int32 three_star_count = 5;
+  int32 two_star_count = 6;
+  int32 one_star_count = 7;
+}
+
+message ReviewResponse {
+  bool success = 1;
+  string message = 2;
+  Review review = 3;
+}
+
+message ReviewListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Review reviews = 3;
+  PaginationInfo pagination = 4;
+}
+
+message ReviewStatsResponse {
+  bool success = 1;
+  ReviewStats stats = 2;
+}

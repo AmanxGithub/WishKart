@@ -106,6 +106,14 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
 
+# gRPC Server Configuration
+grpc:
+  server:
+    port: 9090
+    reflection-service-enabled: true
+    max-inbound-message-size: 4194304
+    max-inbound-metadata-size: 8192
+
 ---
 # Production Profile
 spring:
@@ -135,3 +143,8 @@ logging:
   level:
     root: WARN
     com.wishkart: INFO
+
+grpc:
+  server:
+    port: 9090
+    reflection-service-enabled: false

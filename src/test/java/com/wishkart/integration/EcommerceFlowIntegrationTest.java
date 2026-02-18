@@ -9,6 +9,7 @@ import com.wishkart.repository.ProductRepository;
 import com.wishkart.repository.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -29,6 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("E-Commerce Flow Integration Tests")
+@EnableAutoConfiguration(exclude = {
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerFactoryAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerSecurityAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerMetricAutoConfiguration.class
+})
 class EcommerceFlowIntegrationTest {
 
     @Autowired
