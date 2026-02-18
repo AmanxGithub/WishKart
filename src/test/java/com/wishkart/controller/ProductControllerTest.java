@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,6 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("ProductController Integration Tests")
+@EnableAutoConfiguration(exclude = {
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerFactoryAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerSecurityAutoConfiguration.class,
+    net.devh.boot.grpc.server.autoconfigure.GrpcServerMetricAutoConfiguration.class
+})
 class ProductControllerTest {
 
     @Autowired

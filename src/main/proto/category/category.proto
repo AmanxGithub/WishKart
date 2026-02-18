@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package com.wishkart.grpc.category;
+
+option java_multiple_files = true;
+option java_package = "com.wishkart.grpc.category";
+option java_outer_classname = "CategoryProto";
+
+service CategoryService {
+  // Get all categories
+  rpc GetAllCategories(Empty) returns (CategoryListResponse);
+
+  // Get root categories with subcategories
+  rpc GetRootCategories(Empty) returns (CategoryListResponse);
+
+  // Get category by ID
+  rpc GetCategoryById(CategoryIdRequest) returns (CategoryResponse);
+
+  // Get category by slug
+  rpc GetCategoryBySlug(CategorySlugRequest) returns (CategoryResponse);
+
+  // Get subcategories
+  rpc GetSubcategories(CategoryIdRequest) returns (CategoryListResponse);
+}
+
+// Common messages
+message Empty {}
+
+message CategoryIdRequest {
+  int64 id = 1;
+}
+
+message CategorySlugRequest {
+  string slug = 1;
+}
+
+message Category {
+  int64 id = 1;
+  string name = 2;
+  string slug = 3;
+  string description = 4;
+  string image_url = 5;
+  bool active = 6;
+  int32 display_order = 7;
+  int64 parent_id = 8;
+  string parent_name = 9;
+  repeated Category subcategories = 10;
+  int32 product_count = 11;
+}
+
+message CategoryResponse {
+  bool success = 1;
+  string message = 2;
+  Category category = 3;
+}
+
+message CategoryListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Category categories = 3;
+}
