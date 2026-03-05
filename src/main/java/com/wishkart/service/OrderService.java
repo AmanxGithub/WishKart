@@ -69,13 +69,7 @@ public class OrderService {
             order.setBillingCountry(request.getBillingCountry());
         }
 
-        // Add order items from cart
-        for (CartItem cartItem : cart.getItems()) {
-            OrderItem orderItem = OrderItem.fromCartItem(cartItem);
-            order.addItem(orderItem);
-        }
-
-        // Calculate totals
+        // Calculate totals first (before adding items, use cart values)
         order.setSubtotal(cart.getSubtotal());
         order.setShippingCost(calculateShippingCost(cart));
         order.setTaxAmount(calculateTax(cart.getSubtotal()));
@@ -87,7 +81,16 @@ public class OrderService {
 
         order.calculateTotals();
 
-        // Save order
+        // Save order FIRST to persist it (so it's no longer transient)
+        order = orderRepository.save(order);
+
+        // Now add order items from cart (order is now persistent)
+        for (CartItem cartItem : cart.getItems()) {
+            OrderItem orderItem = OrderItem.fromCartItem(cartItem);
+            order.addItem(orderItem);
+        }
+
+        // Save again to persist the order items
         order = orderRepository.save(order);
 
         // Decrease stock for each product
