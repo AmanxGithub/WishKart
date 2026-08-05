@@ -1,0 +1,10 @@
+Add to wishlist not working -- undefined
+checkout is not working
+
+
+add kafka support for user addition
+send email to newly added user
+cache the product details
+upload the user details and agreements to cloud
+Prometheus+Grafana--monitoring
+ELK stack -- logging

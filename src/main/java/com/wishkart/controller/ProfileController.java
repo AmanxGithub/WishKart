@@ -1,12 +1,15 @@
 package com.wishkart.controller;
 
 import com.wishkart.dto.ApiResponse;
+import com.wishkart.dto.ChangePasswordRequest;
+import com.wishkart.dto.UpdateProfileRequest;
 import com.wishkart.dto.UserDTO;
 import com.wishkart.service.UserService;
 import com.wishkart.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,23 +38,21 @@ public class ProfileController {
     @PutMapping
     @Operation(summary = "Update profile")
     public ResponseEntity<ApiResponse<UserDTO>> updateProfile(
-            @RequestParam(name = "firstName", required = false) String firstName,
-            @RequestParam(name = "lastName", required = false) String lastName,
-            @RequestParam(name = "phone", required = false) String phone) {
+            @Valid @RequestBody UpdateProfileRequest request) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
-        UserDTO user = userService.updateProfile(userId, firstName, lastName, phone);
+        UserDTO user = userService.updateProfile(
+            userId, request.getFirstName(), request.getLastName(), request.getPhone());
         return ResponseEntity.ok(ApiResponse.success("Profile updated", user));
     }
 
-    @PutMapping("/password")
+    @PostMapping("/change-password")
     @Operation(summary = "Change password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
-            @RequestParam("currentPassword") String currentPassword,
-            @RequestParam("newPassword") String newPassword) {
+            @Valid @RequestBody ChangePasswordRequest request) {
         Long userId = SecurityUtil.getCurrentUserId()
             .orElseThrow(() -> new RuntimeException("User not authenticated"));
-        userService.changePassword(userId, currentPassword, newPassword);
+        userService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully"));
     }
 }
