@@ -101,7 +101,8 @@
 
             <!-- Additional Actions -->
             <div class="d-flex gap-2 mb-4">
-                <button class="btn btn-outline-secondary" onclick="addToWishlist()">
+                <button class="btn btn-outline-secondary" th:data-product-id="${product.id}"
+                        onclick="addToWishlist(this.dataset.productId)">
                     <i class="bi bi-heart me-1"></i>Add to Wishlist
                 </button>
                 <button class="btn btn-outline-secondary" onclick="shareProduct()">

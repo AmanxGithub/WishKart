@@ -1,5 +1,7 @@
-Add to wishlist not working -- undefined
+Profile edition not workinf --DONE
+Add to wishlist not working --DONE
 checkout is not working
+reviews added is not showing in profile page
 
 
 add kafka support for user addition
