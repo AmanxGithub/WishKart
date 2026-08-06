@@ -22,7 +22,7 @@ spring:
       path: /h2-console
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:29092
 
   thymeleaf:
     cache: false

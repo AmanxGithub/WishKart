@@ -13,12 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Service for order management operations.
@@ -104,7 +106,17 @@ public class OrderService {
         cartService.clearCart(userId);
 
         log.info("Order created: {} for user {}", order.getOrderNumber(), user.getEmail());
-        kafkaTemplate.send("order", "Hello Kafka");
+
+        CompletableFuture<SendResult<String, String>> future =
+                kafkaTemplate.send("orders", "Hello Kafka");
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                System.out.println("Sent successfully: " + result.getRecordMetadata());
+            } else {
+                ex.printStackTrace();
+            }
+        });
         return OrderDTO.fromEntity(order);
     }
 
