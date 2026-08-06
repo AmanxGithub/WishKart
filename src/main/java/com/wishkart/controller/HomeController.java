@@ -1,8 +1,11 @@
 package com.wishkart.controller;
 
 import com.wishkart.dto.CategoryDTO;
+import com.wishkart.dto.OrderDTO;
 import com.wishkart.dto.ProductDTO;
+import com.wishkart.exception.ResourceNotFoundException;
 import com.wishkart.service.CategoryService;
+import com.wishkart.service.OrderService;
 import com.wishkart.service.ProductService;
 import com.wishkart.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class HomeController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final OrderService orderService;
 
     @GetMapping({"/", "/index", "/home"})
     public String home(Model model) {
@@ -164,5 +168,24 @@ public class HomeController {
     public String orders(Model model) {
         model.addAttribute("isAuthenticated", SecurityUtil.isAuthenticated());
         return "orders/orders";
+    }
+
+    @GetMapping("/orders/{orderNumber}")
+    public String orderDetail(
+            @PathVariable("orderNumber") String orderNumber,
+            @RequestParam(name = "success", required = false, defaultValue = "false") boolean success,
+            Model model) {
+        Long userId = SecurityUtil.getCurrentUserId()
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "orderNumber", orderNumber));
+
+        OrderDTO order = orderService.getOrderByNumber(orderNumber);
+        if (!order.getUserId().equals(userId) && !SecurityUtil.isAdmin()) {
+            throw new ResourceNotFoundException("Order", "orderNumber", orderNumber);
+        }
+
+        model.addAttribute("order", order);
+        model.addAttribute("success", success);
+        model.addAttribute("isAuthenticated", SecurityUtil.isAuthenticated());
+        return "orders/order-detail";
     }
 }

@@ -320,7 +320,7 @@
                 // Clear cart badge
                 updateCartBadge(0);
                 // Redirect to order confirmation
-                window.location.href = '/orders/' + data.data.id + '?success=true';
+                window.location.href = '/orders/' + data.data.orderNumber + '?success=true';
             } else {
                 errorDiv.textContent = data.message || 'Failed to place order';
                 errorDiv.classList.remove('d-none');

@@ -219,7 +219,7 @@
             const wishlistResponse = await fetchWithAuth('/api/wishlist');
             const wishlistData = await wishlistResponse.json();
             if (wishlistData.success && wishlistData.data) {
-                document.getElementById('wishlistCount').textContent = wishlistData.data.itemCount || 0;
+                document.getElementById('wishlistCount').textContent = wishlistData.data.length || 0;
             }
         } catch (e) {
             console.log('Could not load wishlist count');

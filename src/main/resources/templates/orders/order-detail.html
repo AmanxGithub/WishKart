@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Order Details')}"></head>
+<body>
+<nav th:replace="~{fragments/header :: navbar}"></nav>
+
+<div class="container py-4">
+
+    <div th:if="${success}" class="alert alert-success d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill fs-3 me-3"></i>
+        <div>
+            <h5 class="mb-1">Order placed successfully!</h5>
+            <p class="mb-0">Thank you for your purchase. A confirmation email is on its way.</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Order <span th:text="'#' + ${order.orderNumber}"></span></h2>
+            <p class="text-muted mb-0" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy, hh:mm a')}"></p>
+        </div>
+        <span class="badge fs-6"
+              th:classappend="${order.status == 'DELIVERED'} ? 'bg-success' :
+                               (${order.status == 'CANCELLED'} ? 'bg-danger' :
+                               (${order.status == 'SHIPPED'} ? 'bg-primary' : 'bg-warning'))"
+              th:text="${order.status}"></span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-transparent">
+                    <strong>Items</strong>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3" th:each="item : ${order.items}">
+                        <img th:src="${item.productImage != null ? item.productImage : 'https://via.placeholder.com/70x70?text=Product'}"
+                             th:alt="${item.productName}"
+                             style="width: 70px; height: 70px; object-fit: cover;"
+                             class="rounded me-3">
+                        <div class="flex-grow-1">
+                            <div class="fw-medium" th:text="${item.productName}"></div>
+                            <small class="text-muted"
+                                   th:text="'Qty: ' + ${item.quantity} + ' × ₹' + ${#numbers.formatInteger(item.unitPrice, 0, 'COMMA')}"></small>
+                        </div>
+                        <div class="fw-bold" th:text="'₹' + ${#numbers.formatInteger(item.total, 0, 'COMMA')}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <strong>Shipping Address</strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1 fw-medium" th:text="${order.shippingName}"></p>
+                    <p class="mb-1" th:text="${order.shippingAddress}"></p>
+                    <p class="mb-1"
+                       th:text="${order.shippingCity} + ', ' + ${order.shippingState} + ' - ' + ${order.shippingPostalCode}"></p>
+                    <p class="mb-1" th:text="${order.shippingCountry}"></p>
+                    <p class="mb-0 text-muted" th:if="${order.shippingPhone}"
+                       th:text="'Phone: ' + ${order.shippingPhone}"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <strong>Order Summary</strong>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span th:text="'₹' + ${#numbers.formatInteger(order.subtotal, 0, 'COMMA')}"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Shipping</span>
+                        <span th:text="'₹' + ${#numbers.formatInteger(order.shippingCost, 0, 'COMMA')}"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tax</span>
+                        <span th:text="'₹' + ${#numbers.formatInteger(order.taxAmount, 0, 'COMMA')}"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" th:if="${order.discountAmount != null and order.discountAmount.signum() > 0}">
+                        <span class="text-muted">
+                            Discount <span th:if="${order.couponCode}" th:text="'(' + ${order.couponCode} + ')'"></span>
+                        </span>
+                        <span class="text-success" th:text="'-₹' + ${#numbers.formatInteger(order.discountAmount, 0, 'COMMA')}"></span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-0">
+                        <strong>Total</strong>
+                        <strong th:text="'₹' + ${#numbers.formatInteger(order.totalAmount, 0, 'COMMA')}"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-transparent">
+                    <strong>Payment</strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><span class="text-muted">Method:</span> <span th:text="${order.paymentMethod}"></span></p>
+                    <p class="mb-0"><span class="text-muted">Status:</span> <span th:text="${order.paymentStatus}"></span></p>
+                </div>
+            </div>
+
+            <div class="card mt-4" th:if="${order.trackingNumber}">
+                <div class="card-header bg-transparent">
+                    <strong>Tracking</strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0"><i class="bi bi-truck me-1"></i><span th:text="${order.trackingNumber}"></span></p>
+                </div>
+            </div>
+
+            <a href="/orders" class="btn btn-outline-primary w-100 mt-4">
+                <i class="bi bi-box-seam me-2"></i>View All Orders
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+</body>
+</html>

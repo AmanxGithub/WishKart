@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final CartService cartService;
     private final ProductService productService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Transactional
     public OrderDTO createOrder(Long userId, CheckoutRequest request) {
@@ -102,6 +104,7 @@ public class OrderService {
         cartService.clearCart(userId);
 
         log.info("Order created: {} for user {}", order.getOrderNumber(), user.getEmail());
+        kafkaTemplate.send("order", "Hello Kafka");
         return OrderDTO.fromEntity(order);
     }
 
