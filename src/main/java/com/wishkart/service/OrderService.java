@@ -1,8 +1,10 @@
 package com.wishkart.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wishkart.dto.CheckoutRequest;
 import com.wishkart.dto.OrderDTO;
 import com.wishkart.entity.*;
+import com.wishkart.event.OrderEvent;
 import com.wishkart.exception.BadRequestException;
 import com.wishkart.exception.ResourceNotFoundException;
 import com.wishkart.repository.CouponRepository;
@@ -36,6 +38,9 @@ public class OrderService {
     private final CartService cartService;
     private final ProductService productService;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+
+    private static final String ORDER_EVENTS_TOPIC = "orders";
 
     @Transactional
     public OrderDTO createOrder(Long userId, CheckoutRequest request) {
@@ -107,16 +112,10 @@ public class OrderService {
 
         log.info("Order created: {} for user {}", order.getOrderNumber(), user.getEmail());
 
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send("orders", "Hello Kafka");
+        // eventType PENDING here doubles as the "order placed / confirmation" event —
+        // the email consumer should treat it the same as sendOrderConfirmationEmail().
+        publishOrderEvent(order, order.getStatus().name());
 
-        future.whenComplete((result, ex) -> {
-            if (ex == null) {
-                System.out.println("Sent successfully: " + result.getRecordMetadata());
-            } else {
-                ex.printStackTrace();
-            }
-        });
         return OrderDTO.fromEntity(order);
     }
 
@@ -173,6 +172,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
         log.info("Order {} status updated to {}", order.getOrderNumber(), newStatus);
+        publishOrderEvent(order, newStatus.name());
         return OrderDTO.fromEntity(order);
     }
 
@@ -193,6 +193,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
         log.info("Order {} payment status updated to {}", order.getOrderNumber(), paymentStatus);
+        publishOrderEvent(order, order.getStatus().name());
         return OrderDTO.fromEntity(order);
     }
 
@@ -217,6 +218,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
         log.info("Order {} cancelled. Reason: {}", order.getOrderNumber(), reason);
+        publishOrderEvent(order, order.getStatus().name());
         return OrderDTO.fromEntity(order);
     }
 
@@ -229,6 +231,38 @@ public class OrderService {
         order = orderRepository.save(order);
         log.info("Tracking number {} added to order {}", trackingNumber, order.getOrderNumber());
         return OrderDTO.fromEntity(order);
+    }
+
+    /**
+     * Publishes an {@link OrderEvent} for the given order/status transition.
+     * Consumed by (1) the email service to send the matching status-update email,
+     * and (2) the analytics pipeline for revenue/AOV/regional dashboards.
+     * Keyed by orderNumber so all events for one order land on the same partition
+     * (preserves ordering: PENDING -> CONFIRMED -> SHIPPED -> DELIVERED, etc.).
+     * Failures here are logged and swallowed — a messaging outage must never fail checkout.
+     */
+    private void publishOrderEvent(Order order, String eventType) {
+        try {
+            OrderEvent event = OrderEvent.from(order, eventType);
+            String payload = objectMapper.writeValueAsString(event);
+
+            CompletableFuture<SendResult<String, String>> future =
+                kafkaTemplate.send(ORDER_EVENTS_TOPIC, order.getOrderNumber(), payload);
+
+            future.whenComplete((result, ex) -> {
+                if (ex == null) {
+                    log.debug("Order event published: {} [{}] -> partition {}, offset {}",
+                        order.getOrderNumber(), eventType,
+                        result.getRecordMetadata().partition(),
+                        result.getRecordMetadata().offset());
+                } else {
+                    log.error("Failed to publish order event {} [{}]: {}",
+                        order.getOrderNumber(), eventType, ex.getMessage());
+                }
+            });
+        } catch (Exception ex) {
+            log.error("Could not build/publish order event for {}: {}", order.getOrderNumber(), ex.getMessage());
+        }
     }
 
     private void applyCoupon(Order order, String couponCode) {
