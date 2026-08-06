@@ -9,20 +9,18 @@ import com.wishkart.exception.BadRequestException;
 import com.wishkart.exception.ResourceNotFoundException;
 import com.wishkart.repository.CouponRepository;
 import com.wishkart.repository.OrderRepository;
+import com.wishkart.repository.OutboxEventRepository;
 import com.wishkart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Service for order management operations.
@@ -37,7 +35,7 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final CartService cartService;
     private final ProductService productService;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
     private static final String ORDER_EVENTS_TOPIC = "orders";
@@ -234,34 +232,41 @@ public class OrderService {
     }
 
     /**
-     * Publishes an {@link OrderEvent} for the given order/status transition.
-     * Consumed by (1) the email service to send the matching status-update email,
-     * and (2) the analytics pipeline for revenue/AOV/regional dashboards.
-     * Keyed by orderNumber so all events for one order land on the same partition
-     * (preserves ordering: PENDING -> CONFIRMED -> SHIPPED -> DELIVERED, etc.).
-     * Failures here are logged and swallowed — a messaging outage must never fail checkout.
+     * Queues an {@link OrderEvent} for the given order/status transition into the
+     * transactional outbox — consumed later by (1) the email service to send the
+     * matching status-update email, and (2) the analytics pipeline for revenue/AOV/
+     * regional dashboards.
+     *
+     * This is a plain DB insert, called from within the SAME @Transactional method
+     * as the order save above it — so the outbox row commits atomically with the
+     * order change (both happen, or neither does). Kafka is never touched here at
+     * all; {@link OutboxEventPublisher} polls this table separately and only THEN
+     * talks to Kafka, with its own retry loop. That's what makes this "must succeed
+     * eventually" rather than "must succeed right now" — a Kafka outage can never
+     * fail checkout, because checkout never waits on Kafka.
      */
     private void publishOrderEvent(Order order, String eventType) {
         try {
             OrderEvent event = OrderEvent.from(order, eventType);
             String payload = objectMapper.writeValueAsString(event);
 
-            CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(ORDER_EVENTS_TOPIC, order.getOrderNumber(), payload);
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                .aggregateType("ORDER")
+                .aggregateId(order.getOrderNumber())
+                .eventType(eventType)
+                .topic(ORDER_EVENTS_TOPIC)
+                .payload(payload)
+                .build();
 
-            future.whenComplete((result, ex) -> {
-                if (ex == null) {
-                    log.debug("Order event published: {} [{}] -> partition {}, offset {}",
-                        order.getOrderNumber(), eventType,
-                        result.getRecordMetadata().partition(),
-                        result.getRecordMetadata().offset());
-                } else {
-                    log.error("Failed to publish order event {} [{}]: {}",
-                        order.getOrderNumber(), eventType, ex.getMessage());
-                }
-            });
+            outboxEventRepository.save(outboxEvent);
+            log.debug("Outbox event queued: {} [{}]", order.getOrderNumber(), eventType);
         } catch (Exception ex) {
-            log.error("Could not build/publish order event for {}: {}", order.getOrderNumber(), ex.getMessage());
+            // Only JSON serialization could realistically fail here — the DB insert
+            // itself is part of the caller's transaction, so if THIS throws, the
+            // whole order save rolls back too. That's intentional: it means the
+            // event truly couldn't be represented, not that Kafka was unreachable.
+            log.error("Could not queue outbox event for {}: {}", order.getOrderNumber(), ex.getMessage());
+            throw new IllegalStateException("Failed to record order event", ex);
         }
     }
 

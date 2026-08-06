@@ -1,5 +1,7 @@
 package com.wishkart.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wishkart.dto.CheckoutRequest;
 import com.wishkart.dto.OrderDTO;
 import com.wishkart.entity.*;
@@ -47,6 +49,12 @@ class OrderServiceTest {
 
     @Mock
     private ProductService productService;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @Mock
+    private OutboxEventRepository outboxEventRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -184,9 +192,11 @@ class OrderServiceTest {
 
         @Test
         @DisplayName("should update order status")
-        void shouldUpdateOrderStatus() {
+        void shouldUpdateOrderStatus() throws JsonProcessingException {
             when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
             when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+            when(objectMapper.writeValueAsString(any())).thenReturn(testOrder.toString());
+            when(outboxEventRepository.save(any())).thenReturn(null);
 
             OrderDTO result = orderService.updateOrderStatus(1L, Order.OrderStatus.CONFIRMED);
 
@@ -213,9 +223,11 @@ class OrderServiceTest {
 
         @Test
         @DisplayName("should cancel pending order")
-        void shouldCancelPendingOrder() {
+        void shouldCancelPendingOrder() throws JsonProcessingException {
             when(orderRepository.findByIdWithItems(1L)).thenReturn(Optional.of(testOrder));
             when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+            when(objectMapper.writeValueAsString(any())).thenReturn(testOrder.toString());
+            when(outboxEventRepository.save(any())).thenReturn(null);
 
             OrderDTO result = orderService.cancelOrder(1L, "Customer request");
 
@@ -242,9 +254,11 @@ class OrderServiceTest {
 
         @Test
         @DisplayName("should update payment status")
-        void shouldUpdatePaymentStatus() {
+        void shouldUpdatePaymentStatus() throws JsonProcessingException {
             when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
             when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+            when(objectMapper.writeValueAsString(any())).thenReturn(testOrder.toString());
+            when(outboxEventRepository.save(any())).thenReturn(null);
 
             OrderDTO result = orderService.updatePaymentStatus(1L, Order.PaymentStatus.COMPLETED, "pi_123");
 
