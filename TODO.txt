@@ -1,11 +1,16 @@
 Profile edition not workinf --DONE
 Add to wishlist not working --DONE
-checkout is not working
+checkout is not working--DONE
+Payment methods are not enabled in enum.
 reviews added is not showing in profile page
+add products in admin page
+restock inventory
+add category admin page
 
 
 add kafka support for user addition
-send email to newly added user
+send email for every order update
+multiple consumers for a kafka topic-use the new consumer for debezium
 cache the product details
 upload the user details and agreements to cloud
 Prometheus+Grafana--monitoring

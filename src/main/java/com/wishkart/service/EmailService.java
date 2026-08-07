@@ -3,6 +3,9 @@ package com.wishkart.service;
 import com.wishkart.entity.Order;
 import com.wishkart.entity.OrderItem;
 import com.wishkart.entity.User;
+import com.wishkart.event.OrderEvent;
+import com.wishkart.exception.ResourceNotFoundException;
+import com.wishkart.repository.OrderRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Service for sending email notifications.
@@ -30,11 +35,12 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+    private final OrderRepository orderRepository;
 
     @Value("${spring.mail.username:noreply@wishkart.com}")
     private String fromEmail;
 
-    @Value("${wishkart.base-url:http://localhost:8080}")
+    @Value("${wishkart.base-url:http://localhost:8085}")
     private String baseUrl;
 
     /**
@@ -74,7 +80,7 @@ public class EmailService {
         variables.put("discount", formatCurrency(order.getDiscountAmount()));
         variables.put("total", formatCurrency(order.getTotalAmount()));
         variables.put("shippingAddress", formatAddress(order));
-        variables.put("orderUrl", baseUrl + "/orders/" + order.getId());
+        variables.put("orderUrl", baseUrl + "/orders/" + order.getOrderNumber());
 
         sendEmail(
             user.getEmail(),
@@ -220,6 +226,20 @@ public class EmailService {
             "email/new-order-admin",
             variables
         );
+    }
+
+    /**
+     * Sends order status update email.
+     */
+    @Async
+    public void sendOrderStatusUpdateEmail(OrderEvent orderEvent) {
+        Optional<Order> order = orderRepository.findByOrderNumber(orderEvent.getOrderNumber());
+        order.ifPresent(order1 -> {
+            order1.setUser(User.builder().firstName(orderEvent.getCustomerFirstName())
+                    .email(orderEvent.getCustomerEmail()).build());
+            order1.setItems(null);
+            sendOrderConfirmationEmail(order1);
+        });
     }
 
     /**
