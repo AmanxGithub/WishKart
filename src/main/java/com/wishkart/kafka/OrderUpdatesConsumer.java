@@ -30,7 +30,7 @@ public class OrderUpdatesConsumer {
             autoCreateTopics = "true" // Spring will auto-provision the retry and DLQ topics
             //39-40-41-46-56
     )
-    @KafkaListener(topics = "orders", groupId = "234")
+    @KafkaListener(topics = "orders", groupId = "consumerGroupOrder", concurrency = "2")
     public void consume(String message) {
          System.out.println("Processing message: " + message);
         try {

@@ -23,6 +23,8 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:29092
+    listener:
+      concurrency: 3
 
   thymeleaf:
     cache: false
@@ -74,7 +76,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
 
 springdoc:
   api-docs:

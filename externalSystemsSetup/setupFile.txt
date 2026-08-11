@@ -1,0 +1,23 @@
+Files added in system to run different Systems
+(kafka, kafka-ui, prometheus, grafana, Elastic search, Logstash, Kibana)
+kafka-demo/docker-compose.yml
+prometheus/prometheus.yml
+
+apache/kafka
+
+| Tool              | Container       |    Port | Purpose                  |
+| ----------------- | --------------- | ------: | ------------------------ |
+| **Kafka**         | `kafka`         | `29092` | Messaging                |
+| **Kafka UI**      | `kafka-ui`      |  `8090` | Kafka visualization      |
+| **Prometheus**    | `prometheus`    |  `9090` | Metrics collection       |
+| **Grafana**       | `grafana`       |  `3000` | Metrics dashboards       |
+| **Elasticsearch** | `elasticsearch` |  `9200` | Log storage/search       |
+| **Logstash**      | `logstash`      |  `5000` | Log ingestion/processing |
+| **Kibana**        | `kibana`        |  `5601` | Log search/visualization |
+
+
+docker run -d \\n  --name prometheus \\n  -p 9090:9090 \\n  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \\n  prom/prometheus
+docker run -d \\n  --name grafana \\n  -p 3000:3000 \\n  grafana/grafana
+docker compose up -d kafka-ui
+docker compose up -d
+docker compose up -d logstash

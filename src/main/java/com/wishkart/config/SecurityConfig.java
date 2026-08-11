@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers("/products/**", "/api/products/**").permitAll()
                 .requestMatchers("/categories/**", "/api/categories/**").permitAll()
                 .requestMatchers("/search/**", "/api/search/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
 
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
