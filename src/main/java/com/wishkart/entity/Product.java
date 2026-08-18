@@ -1,5 +1,8 @@
 package com.wishkart.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -86,12 +89,14 @@ public class Product extends BaseEntity {
     // Category
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonBackReference
     private Category category;
 
     // Product images
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC")
     @Builder.Default
+    @JsonManagedReference
     private List<ProductImage> images = new ArrayList<>();
 
     // Product reviews
@@ -130,6 +135,7 @@ public class Product extends BaseEntity {
         image.setProduct(null);
     }
 
+    @JsonIgnore
     public String getPrimaryImageUrl() {
         return images.stream()
             .filter(ProductImage::isPrimary)
@@ -138,14 +144,17 @@ public class Product extends BaseEntity {
             .orElse(images.isEmpty() ? "/images/placeholder.png" : images.get(0).getImageUrl());
     }
 
+    @JsonIgnore
     public boolean isInStock() {
         return !trackInventory || stockQuantity > 0;
     }
 
+    @JsonIgnore
     public boolean isLowStock() {
         return trackInventory && stockQuantity <= lowStockThreshold;
     }
 
+    @JsonIgnore
     public BigDecimal getDiscountPercentage() {
         if (compareAtPrice == null || compareAtPrice.compareTo(price) <= 0) {
             return BigDecimal.ZERO;

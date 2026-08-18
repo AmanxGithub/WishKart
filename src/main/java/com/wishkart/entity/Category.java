@@ -1,5 +1,7 @@
 package com.wishkart.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -48,16 +50,19 @@ public class Category extends BaseEntity {
     // Parent category for hierarchical structure
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @JsonBackReference
     private Category parent;
 
     // Subcategories
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     @Builder.Default
+    @JsonManagedReference
     private List<Category> subcategories = new ArrayList<>();
 
     // Products in this category
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     @Builder.Default
+    @JsonManagedReference
     private List<Product> products = new ArrayList<>();
 
     public void addSubcategory(Category subcategory) {

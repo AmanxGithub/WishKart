@@ -34,7 +34,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Product> productRedisTemplate;
 
     @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id) {
@@ -46,22 +46,31 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDTO getProductBySlug(String slug) {
         String redisKey = "product:" + slug;
-        // 1. Check Redis
-        Product product = (Product) redisTemplate.opsForValue().get(redisKey);
-        if (product != null) {
-            System.out.println("CACHE HIT");
-        } else {
-            // 2. Get from DB
-            product = productRepository.findBySlug(slug)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
 
+        // 1. Check Redis cache
+        try {
+            Product cachedProduct = productRedisTemplate.opsForValue().get(redisKey);
+            if (cachedProduct != null) {
+                log.debug("CACHE HIT for product: {}", slug);
+                return ProductDTO.fromEntity(cachedProduct);
+            }
+        } catch (Exception e) {
+            log.debug("Cache retrieval failed for key {}: {}", redisKey, e.getMessage());
+        }
 
-            // 3. Put in Redis
-            redisTemplate.opsForValue().set(
+        // 2. Get from database
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
+
+        // 3. Store in Redis cache
+        try {
+            productRedisTemplate.opsForValue().set(
                     redisKey,
                     product,
                     Duration.ofMinutes(10)
             );
+        } catch (Exception e) {
+            log.debug("Cache storage failed for key {}: {}", redisKey, e.getMessage());
         }
 
         return ProductDTO.fromEntity(product);
