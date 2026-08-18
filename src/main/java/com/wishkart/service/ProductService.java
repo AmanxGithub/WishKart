@@ -15,10 +15,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -32,6 +34,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id) {
@@ -42,8 +45,25 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDTO getProductBySlug(String slug) {
-        Product product = productRepository.findBySlug(slug)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
+        String redisKey = "product:" + slug;
+        // 1. Check Redis
+        Product product = (Product) redisTemplate.opsForValue().get(redisKey);
+        if (product != null) {
+            System.out.println("CACHE HIT");
+        } else {
+            // 2. Get from DB
+            product = productRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
+
+
+            // 3. Put in Redis
+            redisTemplate.opsForValue().set(
+                    redisKey,
+                    product,
+                    Duration.ofMinutes(10)
+            );
+        }
+
         return ProductDTO.fromEntity(product);
     }
 

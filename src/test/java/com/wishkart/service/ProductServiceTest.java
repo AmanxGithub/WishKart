@@ -19,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -40,6 +42,12 @@ class ProductServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Mock
+    private ValueOperations<String, Object> valueOperations;
 
     @InjectMocks
     private ProductService productService;
@@ -104,6 +112,10 @@ class ProductServiceTest {
         @Test
         @DisplayName("should return product when found by slug")
         void shouldReturnProductWhenFoundBySlug() {
+            when(redisTemplate.opsForValue())
+                    .thenReturn(valueOperations);
+            when(valueOperations.get(any()))
+                    .thenReturn(null);
             when(productRepository.findBySlug("test-product"))
                 .thenReturn(Optional.of(testProduct));
 
@@ -116,6 +128,10 @@ class ProductServiceTest {
         @Test
         @DisplayName("should throw exception when slug not found")
         void shouldThrowExceptionWhenSlugNotFound() {
+            when(redisTemplate.opsForValue())
+                    .thenReturn(valueOperations);
+            when(valueOperations.get(any()))
+                    .thenReturn(null);
             when(productRepository.findBySlug(any()))
                 .thenReturn(Optional.empty());
 
