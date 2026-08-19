@@ -13,6 +13,7 @@ import com.wishkart.repository.ProductRepository;
 import com.wishkart.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -44,7 +45,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO getProductBySlug(String slug) {
+    public ProductDTO getProductBySlugCache(String slug) {
         String redisKey = "product:" + slug;
 
         // 1. Check Redis cache
@@ -73,6 +74,15 @@ public class ProductService {
             log.debug("Cache storage failed for key {}: {}", redisKey, e.getMessage());
         }
 
+        return ProductDTO.fromEntity(product);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#slug")
+    public ProductDTO getProductBySlug(String slug) {
+        log.info("Fetching product {} from database", slug);
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
         return ProductDTO.fromEntity(product);
     }
 

@@ -112,10 +112,10 @@ class ProductServiceTest {
         @Test
         @DisplayName("should return product when found by slug")
         void shouldReturnProductWhenFoundBySlug() {
-            when(redisTemplate.opsForValue())
-                    .thenReturn(valueOperations);
-            when(valueOperations.get(any()))
-                    .thenReturn(null);
+//            when(redisTemplate.opsForValue())
+//                    .thenReturn(valueOperations);
+//            when(valueOperations.get(any()))
+//                    .thenReturn(null);
             when(productRepository.findBySlug("test-product"))
                 .thenReturn(Optional.of(testProduct));
 
@@ -128,10 +128,10 @@ class ProductServiceTest {
         @Test
         @DisplayName("should throw exception when slug not found")
         void shouldThrowExceptionWhenSlugNotFound() {
-            when(redisTemplate.opsForValue())
-                    .thenReturn(valueOperations);
-            when(valueOperations.get(any()))
-                    .thenReturn(null);
+//            when(redisTemplate.opsForValue())
+//                    .thenReturn(valueOperations);
+//            when(valueOperations.get(any()))
+//                    .thenReturn(null);
             when(productRepository.findBySlug(any()))
                 .thenReturn(Optional.empty());
 

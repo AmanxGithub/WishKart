@@ -5,6 +5,17 @@ prometheus/prometheus.yml
 
 apache/kafka
 
+
+CONTAINER ID   IMAGE                                                  COMMAND                  CREATED       STATUS      PORTS                                                           NAMES
+24d2bc6831cd   redis:7                                                "docker-entrypoint.s…"   6 days ago    Up 4 days   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp                       redis
+effe3ed5fbdb   docker.elastic.co/logstash/logstash:8.19.2             "/usr/local/bin/dock…"   7 days ago    Up 4 days   5044/tcp, 0.0.0.0:5000->5000/tcp, :::5000->5000/tcp, 9600/tcp   logstash
+c836ab4ba545   docker.elastic.co/kibana/kibana:8.19.2                 "/bin/tini -- /usr/l…"   7 days ago    Up 4 days   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp                       kibana
+0cf4a60665d8   docker.elastic.co/elasticsearch/elasticsearch:8.19.2   "/bin/tini -- /usr/l…"   7 days ago    Up 4 days   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp, 9300/tcp             elasticsearch
+4a1cdc6e1789   grafana/grafana                                        "/run.sh"                8 days ago    Up 4 days   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp                       grafana
+12a9f3443be0   prom/prometheus                                        "/bin/prometheus --c…"   8 days ago    Up 4 days   0.0.0.0:9090->9090/tcp, :::9090->9090/tcp                       prometheus
+4a5c0100f1e8   provectuslabs/kafka-ui:latest                          "/bin/sh -c 'java --…"   13 days ago   Up 4 days   0.0.0.0:8090->8080/tcp, [::]:8090->8080/tcp                     kafka-ui
+2db8ea4a7122   apache/kafka:latest                                    "/__cacert_entrypoin…"   13 days ago   Up 4 days   9092/tcp, 0.0.0.0:29092->29092/tcp, :::29092->29092/tcp         kafka
+
 | Tool              | Container       |    Port | Purpose                  |
 | ----------------- | --------------- | ------: | ------------------------ |
 | **Kafka**         | `kafka`         | `29092` | Messaging                |
@@ -14,7 +25,7 @@ apache/kafka
 | **Elasticsearch** | `elasticsearch` |  `9200` | Log storage/search       |
 | **Logstash**      | `logstash`      |  `5000` | Log ingestion/processing |
 | **Kibana**        | `kibana`        |  `5601` | Log search/visualization |
-| **docker**        | `docker`        |  `6379` | caching                  |
+| **redis**        | `docker`        |  `6379` | caching                  |
 
 docker run -d \\n  --name prometheus \\n  -p 9090:9090 \\n  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \\n  prom/prometheus
 docker run -d \\n  --name grafana \\n  -p 3000:3000 \\n  grafana/grafana
