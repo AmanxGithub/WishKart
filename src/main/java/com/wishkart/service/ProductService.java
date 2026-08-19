@@ -13,6 +13,8 @@ import com.wishkart.repository.ProductRepository;
 import com.wishkart.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +40,7 @@ public class ProductService {
     private final RedisTemplate<String, Product> productRedisTemplate;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#id")
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
@@ -206,6 +209,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CachePut(value = "products", key = "#id")
     public ProductDTO updateProduct(Long id, CreateProductRequest request) {
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
@@ -259,6 +263,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));

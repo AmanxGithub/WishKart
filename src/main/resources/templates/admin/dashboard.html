@@ -417,6 +417,350 @@
         };
         return colors[status] || 'secondary';
     }
+
+    // ==================== PRODUCT ACTIONS ====================
+    let currentProductId = null;
+
+    async function editProduct(id) {
+        try {
+            const response = await fetchWithAuth(`/api/admin/products/${id}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const product = data.data;
+                currentProductId = id;
+
+                document.getElementById('productId').value = id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productSku').value = product.sku;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productComparePrice').value = product.compareAtPrice || '';
+                document.getElementById('productCost').value = product.costPrice || '';
+                document.getElementById('productStock').value = product.stockQuantity;
+                document.getElementById('productLowStock').value = product.lowStockThreshold || 10;
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productShortDesc').value = product.shortDescription || '';
+                document.getElementById('productActive').checked = product.active;
+                document.getElementById('productFeatured').checked = product.featured;
+                document.getElementById('productModal').style.display = 'block';
+                document.querySelector('.modal-title').textContent = 'Edit Product';
+            }
+        } catch (error) {
+            showToast('Failed to load product: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteProduct(id) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            try {
+                const response = await fetchWithAuth(`/api/admin/products/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Product deleted successfully', 'success');
+                    loadProducts();
+                } else {
+                    showToast(data.message || 'Failed to delete product', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to delete product: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function saveProduct(e) {
+        e.preventDefault();
+
+        const id = document.getElementById('productId').value;
+        const productData = {
+            name: document.getElementById('productName').value,
+            sku: document.getElementById('productSku').value,
+            price: parseFloat(document.getElementById('productPrice').value),
+            compareAtPrice: document.getElementById('productComparePrice').value ? parseFloat(document.getElementById('productComparePrice').value) : null,
+            costPrice: document.getElementById('productCost').value ? parseFloat(document.getElementById('productCost').value) : null,
+            stockQuantity: parseInt(document.getElementById('productStock').value),
+            lowStockThreshold: parseInt(document.getElementById('productLowStock').value),
+            description: document.getElementById('productDescription').value,
+            shortDescription: document.getElementById('productShortDesc').value,
+            active: document.getElementById('productActive').checked,
+            featured: document.getElementById('productFeatured').checked
+        };
+
+        try {
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/products/${id}` : '/api/admin/products';
+
+            const response = await fetchWithAuth(url, {
+                method: method,
+                body: JSON.stringify(productData)
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast(id ? 'Product updated successfully' : 'Product created successfully', 'success');
+                closeProductModal();
+                loadProducts();
+            } else {
+                showToast(data.message || 'Failed to save product', 'error');
+            }
+        } catch (error) {
+            showToast('Failed to save product: ' + error.message, 'error');
+        }
+    }
+
+    function closeProductModal() {
+        document.getElementById('productModal').style.display = 'none';
+        document.getElementById('productForm').reset();
+        currentProductId = null;
+    }
+
+    // ==================== ORDER ACTIONS ====================
+    async function viewOrder(id) {
+        try {
+            const response = await fetchWithAuth(`/api/admin/orders/${id}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const order = data.data;
+                alert(`Order #${order.orderNumber}\nStatus: ${order.status}\nTotal: ₹${order.totalAmount}\nDate: ${new Date(order.createdAt).toLocaleDateString()}`);
+            }
+        } catch (error) {
+            showToast('Failed to load order: ' + error.message, 'error');
+        }
+    }
+
+    // ==================== USER ACTIONS ====================
+    async function toggleUserStatus(id) {
+        try {
+            const response = await fetchWithAuth(`/api/admin/users/${id}/toggle-status`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('User status updated', 'success');
+                loadUsers();
+            } else {
+                showToast(data.message || 'Failed to update user status', 'error');
+            }
+        } catch (error) {
+            showToast('Failed to update user status: ' + error.message, 'error');
+        }
+    }
+
+    // ==================== INVENTORY ACTIONS ====================
+    async function restockProduct(id) {
+        const quantity = prompt('Enter quantity to restock:');
+        if (quantity && !isNaN(quantity)) {
+            try {
+                const response = await fetchWithAuth(`/api/admin/products/${id}/stock?quantity=${parseInt(quantity)}`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Stock updated successfully', 'success');
+                    loadInventory();
+                } else {
+                    showToast(data.message || 'Failed to update stock', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to update stock: ' + error.message, 'error');
+            }
+        }
+    }
+
+    // ==================== CATEGORY ACTIONS ====================
+    async function loadCategories() {
+        try {
+            const response = await fetchWithAuth('/api/categories');
+            const data = await response.json();
+
+            if (data.success) {
+                const container = document.getElementById('categoriesList');
+                container.innerHTML = data.data.map(c => `
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <h6 class="mb-0">${c.name}</h6>
+                            <small class="text-muted">${c.description || 'No description'}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-warning" onclick="editCategory(${c.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+        }
+    }
+
+    function showCategoryModal() {
+        alert('Category management modal - to be implemented');
+    }
+
+    async function editCategory(id) {
+        alert('Edit category modal - to be implemented');
+    }
+
+    async function deleteCategory(id) {
+        if (confirm('Are you sure you want to delete this category?')) {
+            try {
+                const response = await fetchWithAuth(`/api/admin/categories/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Category deleted successfully', 'success');
+                    loadCategories();
+                } else {
+                    showToast(data.message || 'Failed to delete category', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to delete category: ' + error.message, 'error');
+            }
+        }
+    }
 </script>
+
+<!-- Product Modal -->
+<div id="productModal" class="modal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Product</h5>
+                <button type="button" class="btn-close" onclick="closeProductModal()"></button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="productId">
+
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Product Name *</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productSku" class="form-label">SKU *</label>
+                        <input type="text" class="form-control" id="productSku" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productPrice" class="form-label">Price *</label>
+                            <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productComparePrice" class="form-label">Compare Price</label>
+                            <input type="number" class="form-control" id="productComparePrice" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productCost" class="form-label">Cost Price</label>
+                            <input type="number" class="form-control" id="productCost" step="0.01">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productStock" class="form-label">Stock Quantity *</label>
+                            <input type="number" class="form-control" id="productStock" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productLowStock" class="form-label">Low Stock Threshold</label>
+                        <input type="number" class="form-control" id="productLowStock" value="10">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productShortDesc" class="form-label">Short Description</label>
+                        <input type="text" class="form-control" id="productShortDesc">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="productActive">
+                        <label class="form-check-label" for="productActive">Active</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="productFeatured">
+                        <label class="form-check-label" for="productFeatured">Featured</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal[style*="display: none"] {
+        display: none !important;
+    }
+
+    .modal-dialog {
+        background-color: white;
+        border-radius: 8px;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-content {
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+    }
+
+    .btn-close {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #666;
+    }
+</style>
 </body>
 </html>

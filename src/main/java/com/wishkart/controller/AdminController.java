@@ -127,6 +127,13 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(PagedResponse.of(products)));
     }
 
+    @GetMapping("/products/{id}")
+    @Operation(summary = "Get product by ID (for admin)")
+    public ResponseEntity<ApiResponse<ProductDTO>> getProductByIdAdmin(@PathVariable("id") Long id) {
+        ProductDTO product = productService.getProductById(id);
+        return ResponseEntity.ok(ApiResponse.success(product));
+    }
+
     @PostMapping("/products")
     @Operation(summary = "Create new product")
     public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@Valid @RequestBody CreateProductRequest request) {
